@@ -1,0 +1,33 @@
+.tile {
+    display: grid;
+    place-content: center;
+    height: 100px;
+    width: 100px;
+}
+
+.black-tile {
+    background-color: #779556;
+    color: #ebecd0;
+}
+
+.white-tile {
+    background-color: #ebecd0;
+    color: #202020;
+}
+
+.piece {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    width: 80px;
+    height: 80px;
+    margin: auto;
+}
+
+.piece:hover {
+    cursor: grab ;
+}
+
+.piece:active {
+    cursor: grabbing;
+}
