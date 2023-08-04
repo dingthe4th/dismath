@@ -6,11 +6,12 @@ interface TileProps {
     x: number;
     y: number;
     type: number;
-    isPiece: boolean;
+    isLegalMove?: boolean
+    isPiece?: boolean;
 }
 
 const Tile: React.FunctionComponent<TileProps> = (props) => {
-    const { image, type, isPiece, x, y } = props;
+    const { image, type, isPiece, x, y, isLegalMove } = props;
     const imageSrc = image || "/pieces/transparent_image.png";
 
     let tileClass = styles.tile;
@@ -22,6 +23,11 @@ const Tile: React.FunctionComponent<TileProps> = (props) => {
     } else {
         tileClass += ` ${styles["white-tile"]}`;
         if(isPiece) pieceClass = styles.piece;
+    }
+
+    // Check if the tile is a legal move and modify its class accordingly
+    if (isLegalMove) {
+        tileClass += ` ${styles["legalMove"]}`;
     }
 
     // Calculate the position of the piece based on the x and y props

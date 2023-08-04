@@ -1,125 +1,193 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import board_style from '../styles/board.module.css';
-import tile_style from '../styles/tile.module.css';
-import Tile from './tile';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import board_style from "../styles/board.module.css";
+import tile_style from "../styles/tile.module.css";
+import Tile from "./tile";
 
 interface Piece {
     image: string;
+    value: string;
     x: number;
     y: number;
     isPiece?: boolean;
+    isDama?: boolean;
 }
 
-const initializePieces = () => {
-    const pieces: Piece[] = [];
+interface ActivePiece {
+    piece: Piece;
+    index: { x: number, y: number };
+}
 
-    for (let x = 0; x < 8; x++) {
-        for (let y = 0; y < 8; y++) {
+interface LegalMove {
+    x: number; // x coordinate
+    y: number; // y coordinate
+}
+
+
+
+// Initialize the board
+const initializeBoard = () => {
+    const board: (Piece | null)[][] = Array.from({ length: 8 }, () => Array(8).fill(null));
+
+    for (let y = 0; y < 8; y++) {
+        for (let x = 0; x < 8; x++) {
             if ((x + y) % 2 === 0) {
                 if (y < 3) {
-                    pieces.push({ image: "/pieces/piece_false_normal.png", x, y });
+                    board[y][x] = { image: "/pieces/piece_false_normal.png", value: 'F', x, y, isDama: false };
                 } else if (y > 4) {
-                    pieces.push({ image: "/pieces/piece_true_normal.png", x, y });
+                    board[y][x] = { image: "/pieces/piece_true_normal.png", value: 'T', x, y, isDama: false };
                 }
             }
         }
     }
 
-    return pieces;
+    return board;
 };
 
-interface ActivePiece {
-    piece: Piece;
-    index: number;
-}
 
+// Actual board object
 const Board = () => {
-    const [pieces, setPieces] = useState<Piece[]>(initializePieces());
+    const [board, setBoard] = useState<(Piece | null)[][]>(initializeBoard());
     const [activePiece, setActivePiece] = useState<ActivePiece | null>(null);
     const [activePiecePosition, setActivePiecePosition] = useState<{ x: number; y: number } | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [legalMoves, setLegalMoves] = useState<LegalMove[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
     const boardRef = useRef<HTMLDivElement>(null);
 
-    const grabPiece = useCallback((e: React.MouseEvent) => {
-        e.preventDefault(); // Prevent text selection while dragging
-        const element = e.target as HTMLElement;
-        const board = boardRef.current;
-        if (element.classList.contains(tile_style.piece) && board) {
-            const x = Math.floor((e.clientX - board.offsetLeft) / 100);
-            const y = Math.floor((e.clientY - board.offsetTop) / 100);
+    const fetchLegalMoves = useCallback(async (piece: Piece, board: (Piece | null)[][]) => {
+        try {
+            const response = await fetch('/api/get-legal-moves', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ piece, board })
+            });
 
-            const foundIndex = pieces.findIndex((p) => p.x === x && p.y === y);
-            const foundPiece = pieces[foundIndex];
+            const { legalMoves } = await response.json();
 
-            if (foundPiece) {
-                setActivePiece({ piece: foundPiece, index: foundIndex });
-                setActivePiecePosition({ x, y });
-            }
+            // Set the legal moves here
+            setLegalMoves(legalMoves);
+
+            return legalMoves;
+        } catch (error) {
+            console.error('Error fetching legal moves:', error);
+            return [];
         }
-    }, [pieces]);
+    }, []);
 
-    const movePiece = useCallback(
-        (e: MouseEvent) => {
-            const board = boardRef.current;
-            if (activePiece && board) {
-                const minX = board.offsetLeft;
-                const minY = board.offsetTop;
-                const maxX = board.offsetLeft + board.clientWidth - 100;
-                const maxY = board.offsetTop + board.clientHeight - 100;
 
-                // Calculate the new position within the board bounds
-                const x = Math.floor((e.clientX - board.offsetLeft) / 100);
-                const y = Math.floor((e.clientY - board.offsetTop) / 100);
+    const grabPiece = useCallback(async (e: React.MouseEvent) => {
+        if (!isDragging) {
+            e.preventDefault();
+            const element = e.target as HTMLElement;
+            const boardElement = boardRef.current;
+            if (element.classList.contains(tile_style.piece) && boardElement) {
+                const x = Math.floor((e.clientX - boardElement.offsetLeft) / 100);
+                const y = Math.floor((e.clientY - boardElement.offsetTop) / 100);
 
-                // Bounds check to prevent dragging outside the board
-                if (x >= 0 && x < 8 && y >= 0 && y < 8) {
-                    // Bounds check to prevent dragging beyond the visible board area
-                    setActivePiecePosition({ x, y });
+                const foundPiece = board[y][x];
+
+                if (foundPiece) {
+                    // Set states
+                    setActivePiece({piece: foundPiece, index: {x, y}});
+                    setIsDragging(true);  // Set isDragging to true
+
+                    // Fetch legal moves
+                    await fetchLegalMoves(foundPiece, board);
                 }
             }
-        },
-        [activePiece]
-    );
-
-
-
-    const dropPiece = useCallback(() => {
-        if (activePiece && activePiecePosition) {
-            setPieces((prev) => prev.map((p, i) => (i === activePiece.index ? { ...p, ...activePiecePosition } : p)));
         }
+    }, [isDragging, board, fetchLegalMoves]);
+
+    const dropPiece = useCallback(async () => {
+        if (activePiece && activePiecePosition) {
+            const {x: newX, y: newY} = activePiecePosition;
+            const {x: oldX, y: oldY} = activePiece.index;
+
+            const isLegalMove = legalMoves.some(move => move.x === newX && move.y === newY);
+
+            if (isLegalMove) {
+                setBoard(prevBoard => {
+                    const updatedBoard = [...prevBoard];
+                    updatedBoard[newY][newX] = {...activePiece.piece, x: newX, y: newY}; // Update the piece's coordinates too
+                    updatedBoard[oldY][oldX] = null;
+                    return updatedBoard;
+                });
+
+                // After making a move, fetch the legal moves for the moved piece again
+                const updatedPiece = {...activePiece.piece, x: newX, y: newY};
+                await fetchLegalMoves(updatedPiece, board);
+            } else {
+                setBoard(prevBoard => {
+                    const boardCopy = [...prevBoard];
+                    boardCopy[oldY][oldX] = activePiece.piece;
+                    return boardCopy;
+                });
+            }
+        }
+
+        setLegalMoves([]);
         setActivePiece(null);
         setActivePiecePosition(null);
-    }, [activePiece, activePiecePosition]);
+        setIsDragging(false);  // Set isDragging back to false
+    }, [activePiece, activePiecePosition, board, legalMoves, fetchLegalMoves]);
+
+    const movePiece = useCallback((e: MouseEvent) => {
+        if (activePiece) {  // Only move the piece if it was grabbed
+            const boardElement = boardRef.current;
+            if (boardElement) {
+                const x = Math.floor((e.clientX - boardElement.offsetLeft) / 100);
+                const y = Math.floor((e.clientY - boardElement.offsetTop) / 100);
+
+                if (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                    setActivePiecePosition({ x, y });
+                }
+
+                if (e.buttons === 0) {  // Check if the mouse button is not pressed
+                    dropPiece().catch((error) => {
+                        console.error(error);
+                    })
+                }
+            }
+        }
+    }, [activePiece, dropPiece]);
 
     useEffect(() => {
-        // Attach the event listeners when the component mounts
-        document.addEventListener('mousemove', movePiece);
-        document.addEventListener('mouseup', dropPiece);
+        const boardElement = boardRef.current;
 
-        // Remove the event listeners when the component unmounts
-        return () => {
-            document.removeEventListener('mousemove', movePiece);
-            document.removeEventListener('mouseup', dropPiece);
-        };
-    }, [movePiece, dropPiece]);
+        if (boardElement) {
+            boardElement.addEventListener('mousemove', movePiece);
+            boardElement.addEventListener('mouseup', dropPiece);
 
-    // Render the board
-    const board = [];
+            return () => {
+                boardElement.removeEventListener('mousemove', movePiece);
+                boardElement.removeEventListener('mouseup', dropPiece);
+            };
+        }
+    }, [movePiece, dropPiece, board]);
+
+    // Board rendering
+    const renderBoard = [];
 
     for (let y = 0; y < 8; y++) {
         for (let x = 0; x < 8; x++) {
             const cellNum = x + y + 2;
-            const currentPiece = pieces.find((p) => p.x === x && p.y === y);
+            const currentPiece = board[y][x];
             const isActivePiece = activePiece?.piece === currentPiece;
 
             const pieceX = isActivePiece && activePiecePosition ? activePiecePosition.x : x;
             const pieceY = isActivePiece && activePiecePosition ? activePiecePosition.y : y;
 
-            board.push(
+            const isLegalMove = legalMoves.some(move => move.x === x && move.y === y);
+
+            renderBoard.push(
                 <Tile
                     key={`${x},${y}`}
                     image={currentPiece?.image}
                     type={cellNum}
                     isPiece={Boolean(currentPiece)}
+                    isLegalMove={isLegalMove}
                     x={pieceX}
                     y={pieceY}
                 />
@@ -133,9 +201,10 @@ const Board = () => {
             className={board_style.board}
             ref={boardRef}
         >
-            {board}
+            {renderBoard}
         </div>
     );
 };
 
 export default Board;
+// 08-04-2023 - 0240AM

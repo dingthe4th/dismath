@@ -31,3 +31,7 @@
 .piece:active {
     cursor: grabbing;
 }
+
+.legalMove {
+    background-color: yellow !important;
+}
