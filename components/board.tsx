@@ -22,6 +22,11 @@ interface LegalMove {
     y: number; // y coordinate
 }
 
+interface PreviousMove {
+    type?: string;
+    capture?: boolean;
+}
+
 const operations: string[][] = [
     ['', '⇐', '', '↑', '', '⊻', '', '¬'],
     ['⊻', '', '↑', '', '∨', '', '⇐', ''],
@@ -63,6 +68,7 @@ const Board = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [score, setScore] = useState(() => 0);
     const [currentPlayer, setCurrentPlayer] = useState<'T' | 'F'>(() => Math.random() < 0.5 ? 'T' : 'F');
+    // const [isDama, setIsDama] = useState(false);
     const boardRef = useRef<HTMLDivElement>(null);
 
     const fetchCanCapture = useCallback(async (selectedPiece: Piece, board: (Piece | null)[][], currentPlayer: 'F' | 'T') => {
@@ -127,7 +133,8 @@ const Board = () => {
 
 
     const grabPiece = useCallback(async (e: React.MouseEvent) => {
-        if (!isDragging) {
+        if (!isDragging && !isLoading) {
+            setIsLoading(true);
             e.preventDefault();
             const element = e.target as HTMLElement;
             const boardElement = boardRef.current;
@@ -143,35 +150,53 @@ const Board = () => {
                     setIsDragging(true);  // Set isDragging to true
 
                     // Fetch legal moves
-                    const result = await fetchCanCapture(foundPiece,board, currentPlayer);
+                    const result = await fetchCanCapture(foundPiece, board, currentPlayer);
                     const canCapture = result.canCapture;
                     const selectedPieceCaptures = result.selectedPieceCaptures;
-                    console.log(canCapture, selectedPieceCaptures);
 
+                    // Only show legalMoves for forced captures and no captures
                     if (canCapture && selectedPieceCaptures) {
                         await fetchLegalMoves(foundPiece, board);
-                    } else if (canCapture && !selectedPieceCaptures) {
-                        // break
                     } else if (!canCapture) {
                         await fetchLegalMoves(foundPiece, board);
                     }
+                    // else if (canCapture && !selectedPieceCaptures) {
+                    //     // break
+                    // }
                 }
             }
+            setIsLoading(false);
         }
-    }, [isDragging, board, fetchLegalMoves, currentPlayer, fetchCanCapture]);
+    }, [isDragging, board, fetchLegalMoves, currentPlayer, fetchCanCapture, isLoading]);
 
     const dropPiece = useCallback(async () => {
+        // TODO: This might be fixed, but can't get time to replicate it
+        // If you multiple pieces can capture a piece, and you started capturing on one side
+        // It will not update to the next player, since it will detect that you can still CAPTURE
         if (activePiece && activePiecePosition && !isLoading) {
+            setIsLoading(true);
             const {x: newX, y: newY} = activePiecePosition;
             const {x: oldX, y: oldY} = activePiece.index;
             let isCapture = false;
-
+            let isDama = false;
             const isLegalMove = legalMoves.some(move => move.x === newX && move.y === newY);
+
+            let movedPiece = {...activePiece.piece, x: newX, y: newY};
+
+            // Check for promotion to Dama
+            if (movedPiece.value === 'T' && newY === 0 && !movedPiece.isDama) {
+                movedPiece.isDama = true;
+                movedPiece.image = "/pieces/piece_true_dama.png"; // Update image to reflect promotion
+                isDama = true;
+            } else if (movedPiece.value === 'F' && newY === 7 && !movedPiece.isDama) {
+                movedPiece.isDama = true;
+                movedPiece.image = "/pieces/piece_false_dama.png"; // Update image to reflect promotion
+                isDama = true;
+            }
 
             if (isLegalMove) {
                 setBoard(prevBoard => {
                     const updatedBoard = [...prevBoard];
-                    let movedPiece = {...activePiece.piece, x: newX, y: newY};
 
                     // Check if the move is a capturing move
                     if (Math.abs(newX - oldX) === 2 && Math.abs(newY - oldY) === 2) {
@@ -186,15 +211,6 @@ const Board = () => {
                         isCapture = true;
                     }
 
-                    // Check for promotion to Dama
-                    if (movedPiece.value === 'T' && newY === 0 && !movedPiece.isDama) {
-                        movedPiece.isDama = true;
-                        movedPiece.image = "/pieces/piece_true_dama.png"; // Update image to reflect promotion
-                    } else if (movedPiece.value === 'F' && newY === 7 && !movedPiece.isDama) {
-                        movedPiece.isDama = true;
-                        movedPiece.image = "/pieces/piece_false_dama.png"; // Update image to reflect promotion
-                    }
-
                     updatedBoard[newY][newX] = movedPiece;
                     updatedBoard[oldY][oldX] = null;
 
@@ -202,17 +218,30 @@ const Board = () => {
                 });
 
                 // After making a move, fetch the legal moves for the moved piece again
-                const updatedPiece = {...activePiece.piece, x: newX, y: newY};
-                await fetchLegalMoves(updatedPiece, board);
+                const updatedPiece = {...movedPiece};
+                const newLegalMoves = await fetchLegalMoves(updatedPiece, board);
 
-                // Calculate scores if there is a capture
+                // Check if there are more captures available
+                const canCapture = newLegalMoves.some((move: { x: number, y: number }) => Math.abs(move.x - newX) === 2 && Math.abs(move.y - newY) === 2);
+
+                let newPrevMove;
+                // If it's a capture move, calculate the scores
                 if (isCapture) {
                     await fetchScores(activePiece.piece, operations[newX][newY]);
-                    isCapture = false;
+                    newPrevMove = {capture: true, type: activePiece.piece.value}
+                } else {
+                    newPrevMove = {capture: false, type: activePiece.piece.value}
                 }
 
-                // Switch the currentPlayer
-                setCurrentPlayer(currentPlayer === 'T' ? 'F' : 'T');
+                // Only change currentPlayer if there are no more captures, and it's not a consecutive capture
+                if ((!canCapture) ||
+                    (canCapture && !newPrevMove.capture) ||
+                    (canCapture && newPrevMove.capture && newPrevMove.type !== activePiece.piece.value))
+                {
+                    // (isCapture && prevMove?.capture && prevMove?.type !== activePiece.piece.value) ||
+                    setCurrentPlayer(currentPlayer === 'T' ? 'F' : 'T');
+                    setActivePiece(null);
+                }
             } else {
                 setBoard(prevBoard => {
                     const boardCopy = [...prevBoard];
@@ -221,13 +250,12 @@ const Board = () => {
                 });
             }
         }
-
+        // setActivePiece(null);
+        setIsLoading(false);
         setLegalMoves([]);
-        setActivePiece(null);
         setActivePiecePosition(null);
         setIsDragging(false);  // Set isDragging back to false
-    }, [activePiece, activePiecePosition, board, isLoading, legalMoves, fetchLegalMoves, fetchScores, score]);
-
+    }, [activePiece, activePiecePosition, board, isLoading, legalMoves, fetchLegalMoves, fetchScores, currentPlayer]);
 
     const movePiece = useCallback((e: MouseEvent) => {
         if (activePiece) {  // Only move the piece if it was grabbed
