@@ -59,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         case '↑':
                         case '⊻':
                         case '⇐':
-                            updatedScore+=2;
+                            updatedScore = updatedScore + 2;
                             break;
                         case '↓':
                         case '⇔':
@@ -73,7 +73,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         case '⇔':
                         case '∧':
                         case '⇐':
-                            updatedScore-=2;
+                            console.log("I got here");
+                            updatedScore = updatedScore - 2;
                             break;
                         case '∨':
                         case '↑':
@@ -85,6 +86,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 }
             }
 
+            // Server checking
+            // console.log('-------');
+            // console.log('Old score: ' , score);
+            // console.log('Operand: ', operand);
+            // console.log('Piece: ', piece.value, ' isDama: ', piece.isDama);
+            // console.log('Updated score: ' , updatedScore);
+            // console.log('-------');
             res.status(200).json({ score: updatedScore });
         } catch (error) {
             console.error('Error calculating legal moves:', error);

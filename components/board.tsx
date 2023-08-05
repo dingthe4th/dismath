@@ -27,6 +27,11 @@ interface PreviousMove {
     capture?: boolean;
 }
 
+interface BoardProps {
+    score: number;
+    setScore: React.Dispatch<React.SetStateAction<number>>;
+}
+
 const operations: string[][] = [
     ['', '⇐', '', '↑', '', '⊻', '', '¬'],
     ['⊻', '', '↑', '', '∨', '', '⇐', ''],
@@ -59,18 +64,15 @@ const initializeBoard = () => {
 
 
 // Actual board object
-const Board = () => {
+const Board: React.FC<BoardProps> = ({score, setScore}) => {
     const [board, setBoard] = useState<(Piece | null)[][]>(initializeBoard());
     const [activePiece, setActivePiece] = useState<ActivePiece | null>(null);
     const [activePiecePosition, setActivePiecePosition] = useState<{ x: number; y: number } | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [legalMoves, setLegalMoves] = useState<LegalMove[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [score, setScore] = useState(() => 0);
     const [currentPlayer, setCurrentPlayer] = useState<'T' | 'F'>(() => Math.random() < 0.5 ? 'T' : 'F');
-    // const [isDama, setIsDama] = useState(false);
     const boardRef = useRef<HTMLDivElement>(null);
-
     const fetchCanCapture = useCallback(async (selectedPiece: Piece, board: (Piece | null)[][], currentPlayer: 'F' | 'T') => {
         try {
             const response = await fetch('/api/get-force-capture', {
@@ -101,12 +103,13 @@ const Board = () => {
             const { score: updatedScore } = await response.json();
 
             // Set the updated score
+            console.log('Updated score: ' , updatedScore);
             setScore(updatedScore);
 
         } catch (error) {
             console.error('Error fetching scores:', error);
         }
-    }, [score]);
+    }, [setScore, score]);
 
 
     const fetchLegalMoves = useCallback(async (piece: Piece, board: (Piece | null)[][]) => {
@@ -227,7 +230,7 @@ const Board = () => {
                 let newPrevMove;
                 // If it's a capture move, calculate the scores
                 if (isCapture) {
-                    await fetchScores(activePiece.piece, operations[newX][newY]);
+                    await fetchScores(activePiece.piece, operations[newY][newX]);
                     newPrevMove = {capture: true, type: activePiece.piece.value}
                 } else {
                     newPrevMove = {capture: false, type: activePiece.piece.value}
