@@ -1,11 +1,8 @@
 import React from 'react';
-import styles from '../styles/scoreboard.module.css';
+import styles from '../styles/scorebar.module.css';
+import { ScoreboardProps } from '../types/interface';
 
-interface ScoreboardProps {
-    score: number;
-}
-
-const Scoreboard: React.FC<ScoreboardProps> = ({ score }) => {
+const ScoreBar: React.FC<ScoreboardProps> = ({ score }) => {
     const adjustmentFactor = 4;
     const barScore = (score < 0 || score > 0) ? 50 + Math.abs(score * adjustmentFactor) : 50;
 
@@ -27,4 +24,4 @@ const Scoreboard: React.FC<ScoreboardProps> = ({ score }) => {
     );
 };
 
-export default Scoreboard;
+export default ScoreBar;

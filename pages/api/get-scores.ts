@@ -1,13 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-
-interface Piece {
-    image: string;
-    value: string;
-    x: number;
-    y: number;
-    isPiece?: boolean;
-    isDama?: boolean;
-}
+import { Piece } from '../../types/interface';
 
 /*
 *  Notes: Available operands = ["∨","↑","⊻","∧","↓","⇔","⇐","¬"]
@@ -20,6 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const { piece, operand, score } = req.body;
             // Initialize score to be updated
             let updatedScore : number = score;
+            let turnScore : number = 0;
 
             // Updating score logic
             if(piece.isDama) {
@@ -32,6 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         case '↓':
                         case '⇔':
                         case '¬':
+                            turnScore = 2;
                             updatedScore+=2;
                             break;
                         case '∧':
@@ -46,6 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         case '↓':
                         case '⇔':
                         case '¬':
+                            turnScore = -2;
                             updatedScore-=2;
                             break;
                         case '∨':
@@ -59,6 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         case '↑':
                         case '⊻':
                         case '⇐':
+                            turnScore = 2;
                             updatedScore = updatedScore + 2;
                             break;
                         case '↓':
@@ -73,7 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         case '⇔':
                         case '∧':
                         case '⇐':
-                            console.log("I got here");
+                            turnScore = -2;
                             updatedScore = updatedScore - 2;
                             break;
                         case '∨':
@@ -93,7 +89,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // console.log('Piece: ', piece.value, ' isDama: ', piece.isDama);
             // console.log('Updated score: ' , updatedScore);
             // console.log('-------');
-            res.status(200).json({ score: updatedScore });
+            console.log('Turn score: ', turnScore);
+            console.log('Updated score: ', updatedScore);
+            res.status(200).json({ score: updatedScore, moveScore: turnScore });
         } catch (error) {
             console.error('Error calculating legal moves:', error);
             res.status(500).json({ error: 'Internal Server Error' });

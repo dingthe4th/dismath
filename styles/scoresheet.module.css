@@ -1,0 +1,25 @@
+.scoresheet {
+    width: 400px;
+    height: 800px;
+    overflow-y: auto;
+    background-color: #d0d0d0;
+    padding: 1rem;
+    box-sizing: border-box;
+    color: #333;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    border: 1px solid #aaa;
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.table th {
+    background-color: #bbb;
+    font-weight: bold;
+}

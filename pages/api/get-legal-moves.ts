@@ -1,18 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-
-interface Piece {
-    image: string;
-    value: string;
-    x: number;
-    y: number;
-    isPiece?: boolean;
-    isDama?: boolean;
-}
-
-interface LegalMove {
-    x: number; // x coordinate
-    y: number; // y coordinate
-}
+import { Piece } from '../../types/interface';
+import { LegalMove } from '../../types/interface';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {

@@ -1,15 +1,6 @@
 import React from "react";
 import styles from '../styles/tile.module.css';
-
-interface TileProps {
-    image?: string;
-    x: number;
-    y: number;
-    type: number;
-    isLegalMove?: boolean
-    isPiece?: boolean;
-    operand: string;
-}
+import { TileProps } from "../types/interface";
 
 const Tile: React.FunctionComponent<TileProps> = (props) => {
     const { image, type, isPiece, x, y, isLegalMove } = props;

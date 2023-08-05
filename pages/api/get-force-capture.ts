@@ -1,13 +1,5 @@
 import {NextApiRequest, NextApiResponse} from 'next';
-
-interface Piece {
-    image: string;
-    value: string;
-    x: number;
-    y: number;
-    isPiece?: boolean;
-    isDama?: boolean;
-}
+import {Piece} from '../../types/interface';
 
 interface LegalMove {
     x: number; // x coordinate
