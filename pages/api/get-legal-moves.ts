@@ -19,10 +19,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         try {
             // Given
             const { piece, board } = req.body;
-            console.log('Received board state::: ', board);
 
             // Prepare the return
-            const legalMoves: LegalMove[] = [];
+            const captureMoves: LegalMove[] = [];
+            const nonCaptureMoves: LegalMove[] = [];
             // Variables for checking relative to position x,y of piece
             let direction: { x: number; y: number }[] = [];
 
@@ -46,8 +46,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 // Check if the next square in the same direction is within the board
                 if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
                     if (board[newY][newX] === null) {
-                        // If the square is empty, this is a legal move
-                        legalMoves.push({ x: newX, y: newY });
+                        // If the square is empty, this is a non-capture move
+                        nonCaptureMoves.push({ x: newX, y: newY });
                     } else if (board[newY][newX]?.value !== piece.value) {
                         // If the square is occupied by an opponent piece
                         // Check if the next square after capturing is within the board
@@ -55,14 +55,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         let captureX = newX + dir.x;
 
                         if (captureX >= 0 && captureX < 8 && captureY >= 0 && captureY < 8 && board[captureY][captureX] === null) {
-                            // If the next square after capturing is empty, this is a legal capture move
-                            legalMoves.push({ x: captureX, y: captureY });
+                            // If the next square after capturing is empty, this is a capture move
+                            captureMoves.push({ x: captureX, y: captureY });
                         }
                     }
                 }
             });
 
-            // Calculate legal moves based on piece position x and y relative to the board
+            // If there are capture moves, return only the capture moves.
+            // If there are no capture moves, return the non-capture moves.
+            const legalMoves = captureMoves.length > 0 ? captureMoves : nonCaptureMoves;
+
+            // Return legal moves based on piece position x and y relative to the board
             res.status(200).json({ legalMoves });
         } catch (error) {
             console.error('Error calculating legal moves:', error);

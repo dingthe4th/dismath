@@ -8,6 +8,7 @@ interface TileProps {
     type: number;
     isLegalMove?: boolean
     isPiece?: boolean;
+    operand: string;
 }
 
 const Tile: React.FunctionComponent<TileProps> = (props) => {
@@ -17,7 +18,7 @@ const Tile: React.FunctionComponent<TileProps> = (props) => {
     let tileClass = styles.tile;
     let pieceClass = "";
 
-    if (type % 2 === 0) {
+    if (type % 2 === 1) {
         tileClass += ` ${styles["black-tile"]}`;
         pieceClass = styles.piece;
     } else {
@@ -44,7 +45,9 @@ const Tile: React.FunctionComponent<TileProps> = (props) => {
                     className={pieceClass}
                 />
             )}
-            {/* [{props.desc}] */}
+            {(type % 2 === 1) && (
+                <div className={styles.operand}>{props.operand}</div>
+            )}
         </div>
     );
 };

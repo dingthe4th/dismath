@@ -3,6 +3,7 @@
     place-content: center;
     height: 100px;
     width: 100px;
+    position: relative;
 }
 
 .black-tile {
@@ -22,6 +23,7 @@
     width: 80px;
     height: 80px;
     margin: auto;
+    z-index: 2;
 }
 
 .piece:hover {
@@ -33,5 +35,17 @@
 }
 
 .legalMove {
-    background-color: yellow !important;
+    background-color: coral  !important;
+}
+
+.operand {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 25px;
+    font-weight: bold;
+    font-family: "Arial Black", sans-serif;
+    z-index: 1;
 }
