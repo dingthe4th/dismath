@@ -45,14 +45,19 @@ export interface Move {
 
 export interface ScoreNotation {
     moveNumber: number;
-    source: Move;
-    dest: Move;
+    source?: LegalMove;
+    dest?: LegalMove;
     calculation: string;
     score: number;
     total: number;
 }
 
 interface ComputerMove {
-    source: LegalMove;
-    dest: LegalMove;
+    source?: LegalMove;
+    dest?: LegalMove;
+}
+
+export interface LegalComputerMove {
+    source: { x: number; y: number };
+    dest: { x: number; y: number };
 }

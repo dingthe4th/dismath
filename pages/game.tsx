@@ -12,7 +12,7 @@ export default function Game() {
     return (
         <div className={styles.game}>
             <ScoreBar score={score} />
-            <Board setScore={setScore} score={score}  setScoreSheet={setScoreSheet}/>
+            <Board setScore={setScore} score={score} scoreSheet={scoreSheet} setScoreSheet={setScoreSheet}/>
             <ScoreSheet scoreSheet={scoreSheet} />
         </div>
     )

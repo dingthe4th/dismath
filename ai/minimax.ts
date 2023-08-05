@@ -1,4 +1,4 @@
-import { Piece, LegalMove } from '../types/interface';
+import {Piece, LegalMove, LegalComputerMove} from '../types/interface';
 
 export function staticEvaluation(player_side: 'T' | 'F', board: (Piece | null)[][]): number {
     let score = 0;
@@ -7,30 +7,38 @@ export function staticEvaluation(player_side: 'T' | 'F', board: (Piece | null)[]
         for (let x = 0; x < board[y].length; x++) {
             const piece = board[y][x];
             if (piece) {
-                // Assign a value for normal pieces and a higher value for Dama
-                const pieceValue = piece.isDama ? 3 : 1;
+                const pieceValue = piece.isDama ? 5 : 1;
 
-                // Add or subtract the value based on the player's side
+                // Add a bonus for pieces that are closer to becoming Dama
+                const promotionBonus = piece.value === player_side ? (7 - y) * 0.75 : y * 0.75;
+
+                // Combine piece value and bonus
+                const totalValue = pieceValue + promotionBonus;
+
                 if (piece.value === player_side) {
-                    score += pieceValue;
+                    score += totalValue;
                 } else {
-                    score -= pieceValue;
+                    score -= totalValue;
                 }
             }
         }
     }
+    // TODO: If time permits, add more sophisticated evaluation
+    // since the A.I. is still not perfect, or simply still beatable
 
     return score;
 }
+
 
 interface ComputerMove {
     source: LegalMove; // or { x: number; y: number }
     dest: LegalMove;   // or { x: number; y: number }
 }
 
-export function getAllPossibleMoves(player_side: string, board: (Piece | null)[][]): ComputerMove[] {
-    // Prepare the return
-    const legalMoves: ComputerMove[] = [];
+export function getAllPossibleMoves(player_side: string, board: (Piece | null)[][]) {
+    // Prepare the return values
+    const captureMoves: LegalComputerMove[] = [];
+    const nonCaptureMoves: LegalComputerMove[] = [];
 
     // Iterate through the board to find all pieces of the current player
     for (let y = 0; y < 8; y++) {
@@ -61,7 +69,7 @@ export function getAllPossibleMoves(player_side: string, board: (Piece | null)[]
                     if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
                         if (board[newY][newX] === null) {
                             // If the square is empty, this is a non-capture move
-                            legalMoves.push({ source: { x: x, y: y }, dest: { x: newX, y: newY } });
+                            nonCaptureMoves.push({ source: { x, y }, dest: { x: newX, y: newY } });
                         } else if (board[newY][newX]?.value !== piece.value) {
                             // If the square is occupied by an opponent piece
                             // Check if the next square after capturing is within the board
@@ -70,7 +78,7 @@ export function getAllPossibleMoves(player_side: string, board: (Piece | null)[]
 
                             if (captureX >= 0 && captureX < 8 && captureY >= 0 && captureY < 8 && board[captureY][captureX] === null) {
                                 // If the next square after capturing is empty, this is a capture move
-                                legalMoves.push({ source: { x: x, y: y }, dest: { x: captureX, y: captureY } });
+                                captureMoves.push({ source: { x, y }, dest: { x: captureX, y: captureY } });
                             }
                         }
                     }
@@ -79,10 +87,10 @@ export function getAllPossibleMoves(player_side: string, board: (Piece | null)[]
         }
     }
 
-    return legalMoves;
+    // If there are capture moves, return only the capture moves.
+    // If there are no capture moves, return the non-capture moves.
+    return captureMoves.length > 0 ? captureMoves : nonCaptureMoves;
 }
-
-
 
 export function oppositePlayer(player_side: string): 'T' | 'F' {
     return player_side === 'T' ? 'F' : 'T';
@@ -158,7 +166,7 @@ export function computerMove(board: (Piece | null)[][], player_side: string): Co
             const newBoard = applyMove(board, move, tempPiece);
 
             // Call the Minimax function for the new state
-            const score = MMAB(2, oppositePlayer(player_side), -Infinity, Infinity, newBoard);
+            const score = MMAB(3, oppositePlayer(player_side), -Infinity, Infinity, newBoard);
 
             // Update the best score and move if this move is better
             if (score > bestScore) {
