@@ -31,8 +31,8 @@ export function staticEvaluation(player_side: 'T' | 'F', board: (Piece | null)[]
 
 
 interface ComputerMove {
-    source: LegalMove; // or { x: number; y: number }
-    dest: LegalMove;   // or { x: number; y: number }
+    source: LegalMove;
+    dest: LegalMove;
 }
 
 export function getAllPossibleMoves(player_side: string, board: (Piece | null)[][]) {
@@ -138,7 +138,7 @@ export function MMAB(depth: number, player_side: 'T' | 'F', alpha: number, beta:
 
 export function applyMove(board: (Piece | null)[][], move: ComputerMove, piece: Piece): (Piece | null)[][] {
     const { source, dest } = move;
-    const newBoard = [...board.map(row => [...row])]; // Clone the board
+    const newBoard = JSON.parse(JSON.stringify(board));
 
     // Move the piece to the destination
     newBoard[dest.y][dest.x] = piece;
@@ -149,14 +149,18 @@ export function applyMove(board: (Piece | null)[][], move: ComputerMove, piece: 
     return newBoard;
 }
 
-export function computerMove(board: (Piece | null)[][], player_side: string): ComputerMove | null {
+export function computerMove(board: (Piece | null)[][], player_side: string,  selectedPiece?: Piece): ComputerMove | null {
     // Determine the best move using the Minimax algorithm with Alpha-Beta pruning
     let bestScore = -Infinity;
     let bestMove: ComputerMove | null = null;
 
     const nodes = getAllPossibleMoves(player_side, board);
 
-    nodes.forEach((move) => {
+    const filteredNodes = selectedPiece
+        ? nodes.filter((move) => move.source.x === selectedPiece.x && move.source.y === selectedPiece.y)
+        : nodes;
+
+    filteredNodes.forEach((move) => {
         // Get the piece at the source position
         const piece = board[move.source.y][move.source.x];
 
@@ -178,5 +182,3 @@ export function computerMove(board: (Piece | null)[][], player_side: string): Co
 
     return bestMove;
 }
-
-

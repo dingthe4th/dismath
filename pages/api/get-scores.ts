@@ -9,9 +9,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'POST') {
         try {
             // Given
-            const { piece, operand, score } = req.body;
+            const { piece, operand, score: oldScore } = req.body;
             // Initialize score to be updated
-            let updatedScore : number = score;
+            let updatedScore : number = oldScore;
             let turnScore : number = 0;
 
             // Updating score logic
@@ -83,14 +83,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
 
             // Server checking
-            // console.log('-------');
-            // console.log('Old score: ' , score);
+            console.log('-------');
+            console.log('Old score: ' , oldScore);
             // console.log('Operand: ', operand);
             // console.log('Piece: ', piece.value, ' isDama: ', piece.isDama);
             // console.log('Updated score: ' , updatedScore);
-            // console.log('-------');
             console.log('Turn score: ', turnScore);
             console.log('Updated score: ', updatedScore);
+            console.log('-------');
             res.status(200).json({ score: updatedScore, moveScore: turnScore });
         } catch (error) {
             console.error('Error calculating legal moves:', error);
