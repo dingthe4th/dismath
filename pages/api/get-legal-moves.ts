@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Piece } from '../../types/interface';
+import {EMPTY_CELL, Piece} from '../../types/interface';
 import { LegalMove } from '../../types/interface';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -7,6 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         try {
             // Given
             const { piece, board } = req.body;
+
 
             // Prepare the return
             const captureMoves: LegalMove[] = [];
@@ -33,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
                 // Check if the next square in the same direction is within the board
                 if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
-                    if (board[newY][newX] === null) {
+                    if (!board[newY][newX].isPiece) {
                         // If the square is empty, this is a non-capture move
                         nonCaptureMoves.push({ x: newX, y: newY });
                     } else if (board[newY][newX]?.value !== piece.value) {
@@ -42,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         let captureY = newY + dir.y;
                         let captureX = newX + dir.x;
 
-                        if (captureX >= 0 && captureX < 8 && captureY >= 0 && captureY < 8 && board[captureY][captureX] === null) {
+                        if (captureX >= 0 && captureX < 8 && captureY >= 0 && captureY < 8 && !board[captureY][captureX].isPiece) {
                             // If the next square after capturing is empty, this is a capture move
                             captureMoves.push({ x: captureX, y: captureY });
                         }
@@ -52,8 +53,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             // If there are capture moves, return only the capture moves.
             // If there are no capture moves, return the non-capture moves.
-            const legalMoves = captureMoves.length > 0 ? captureMoves : nonCaptureMoves;
 
+            const legalMoves = captureMoves.length > 0 ? captureMoves : nonCaptureMoves;
             // Return legal moves based on piece position x and y relative to the board
             res.status(200).json({ legalMoves });
         } catch (error) {

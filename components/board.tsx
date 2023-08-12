@@ -2,14 +2,25 @@ import React, {useCallback, useEffect, useRef, useState} from "react";
 import board_style from "../styles/board.module.css";
 import tile_style from "../styles/tile.module.css";
 import Tile from "./tile";
-import {ActivePiece, LegalMove, Move, Piece, ScoreNotation} from "../types/interface";
-import {applyMove, computerMove, getAllPossibleMoves, MMAB, oppositePlayer} from "../ai/minimax";
+import {ActivePiece, EMPTY_CELL, LegalMove, Piece, ScoreNotation} from "../types/interface";
+import {computerMove, getAllPossibleMoves, oppositePlayer} from "../ai/minimax";
+import {clearTimeout} from "timers";
 
 export interface BoardProps {
+    currentPlayer: 'T' | 'F' | null | undefined;
+    board: (Piece | typeof EMPTY_CELL)[][];
+    firstTurn: 'T' | 'F' | null | undefined;
+    isPVP?: boolean;
+    playerPiece: 'T' | 'F' | null | undefined;
     score: number;
     scoreSheet: ScoreNotation[];
+    moveNumber: number;
     setScore: React.Dispatch<React.SetStateAction<number>>;
     setScoreSheet: React.Dispatch<React.SetStateAction<ScoreNotation[]>>;
+    setIsGameOver: React.Dispatch<React.SetStateAction<boolean>>;
+    setBoard: React.Dispatch<React.SetStateAction<(Piece | typeof EMPTY_CELL)[][]>>;
+    setCurrentPlayer: React.Dispatch<React.SetStateAction<'T' | 'F' | null | undefined>>;
+    setMoveNumber: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const operations: string[][] = [
@@ -24,18 +35,18 @@ const operations: string[][] = [
 ];
 
 // Initialize the board
-const initializeBoard = () => {
-    const board: (Piece | null)[][] = Array.from({ length: 8 }, () => Array(8).fill(null));
-
+export const initializeBoard = () => {
+    const board: (Piece | typeof EMPTY_CELL)[][] = Array.from({ length: 8 }, () => Array(8).fill(EMPTY_CELL));
     for (let y = 0; y < 8; y++) {
         for (let x = 0; x < 8; x++) {
             if ((x + y) % 2 === 1) {
                 if (y < 3) {
-                    board[y][x] = { image: "/pieces/piece_false_normal.png", value: 'F', x, y, isDama: false };
+                    board[y][x] = { image: "/pieces/piece_false_normal.png", value: 'F', x, y, isDama: false, isPiece: true };
                 } else if (y > 4) {
-                    board[y][x] = { image: "/pieces/piece_true_normal.png", value: 'T', x, y, isDama: false };
+                    board[y][x] = { image: "/pieces/piece_true_normal.png", value: 'T', x, y, isDama: false, isPiece: true };
                 }
             }
+
         }
     }
 
@@ -50,21 +61,34 @@ const isValidSquare = (x: number, y: number) => {
 }
 
 // Actual board object
-const Board: React.FC<BoardProps> = ({score, setScore, scoreSheet, setScoreSheet}) => {
-    const [board, setBoard] = useState<(Piece | null)[][]>(initializeBoard());
-    const [activePiece, setActivePiece] = useState<ActivePiece | null>(null);
-    const [activePiecePosition, setActivePiecePosition] = useState<{ x: number; y: number } | null>(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const [legalMoves, setLegalMoves] = useState<LegalMove[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [currentPlayer, setCurrentPlayer] = useState<'T' | 'F'>(() => Math.random() < 0.5 ? 'T' : 'F');
+const Board: React.FC<BoardProps> = ({score,
+                                         setScore,
+                                         scoreSheet,
+                                         setScoreSheet,
+                                         playerPiece,
+                                         isPVP,
+                                         setIsGameOver,
+                                         board,
+                                         setBoard,
+                                         firstTurn,
+                                         currentPlayer,
+                                         setCurrentPlayer,
+                                         moveNumber,
+                                         setMoveNumber
+                                     }) => {
+    const [activePiece, setActivePiece] = useState<ActivePiece | null>(() => null);
+    const [activePiecePosition, setActivePiecePosition] = useState<{ x: number; y: number } | null>(() =>null);
+    const [isDragging, setIsDragging] = useState(() => false);
+    const [legalMoves, setLegalMoves] = useState<LegalMove[]>(() => []);
+    const [isLoading, setIsLoading] = useState(() => false);
     const [moveScore, setMoveScore] = useState(()=> 0);
-    const [moveNumber, setMoveNumber] = useState(() => 0);
     const [computerPlayer, setComputerPlayer] = useState<'T' | 'F'>(() => (currentPlayer==='T' ? 'F' : 'T'));
-    const [prevMove, setPrevMove] = useState<{ capture: boolean; type: string } | null>(null);
+    const [prevMove, setPrevMove] = useState<{ capture: boolean; type: string } | null>(() => null);
+    const [computerTurn, setComputerTurn] = useState(() => false);
     const boardRef = useRef<HTMLDivElement>(null);
+    const offset = 75;
 
-    const fetchCanCapture = useCallback(async (selectedPiece: Piece, board: (Piece | null)[][], currentPlayer: 'F' | 'T') => {
+    const fetchCanCapture = useCallback(async (selectedPiece: Piece, board: (Piece | typeof EMPTY_CELL)[][], currentPlayer: 'F' | 'T') => {
         try {
             const response = await fetch('/api/get-force-capture', {
                 method: 'POST',
@@ -81,7 +105,7 @@ const Board: React.FC<BoardProps> = ({score, setScore, scoreSheet, setScoreSheet
         }
     }, []);
 
-    const fetchLegalMoves = useCallback(async (piece: Piece, board: (Piece | null)[][]) => {
+    const fetchLegalMoves = useCallback(async (piece: Piece, board: (Piece | typeof EMPTY_CELL)[][]) => {
         try {
             const response = await fetch('/api/get-legal-moves', {
                 method: 'POST',
@@ -110,35 +134,47 @@ const Board: React.FC<BoardProps> = ({score, setScore, scoreSheet, setScoreSheet
 
         if (tPieces === 0 || fPieces === 0) {
             // One of the players has no more pieces left
+            console.log("GAME OVER THERE IS NO MORE PIECES LEFT")
+            setIsGameOver(true);
             return true;
         }
 
         // Check if the game reaches move 100
         // TODO: Check average game moves, add 30 to that, that's the limit
         if (moveNumber === 70) {
+            console.log("GAME OVER BECAUSE OF MOVES")
+            setIsGameOver(true);
             return true;
         }
 
         // Check if the current player has any legal moves
         for (let y = 0; y < 8; y++) {
             for (let x = 0; x < 8; x++) {
+
+                // TODO: Untested 8-7-23 0526H
+                // if(!isValidSquare(x, y)) continue;
+
                 const piece = board[y][x];
                 if (piece && piece.value === currentPlayer) {
                     const legalMoves = await fetchLegalMoves(piece, board);
+
                     if (legalMoves.length > 0) {
                         // The current player has at least one legal move
+                        setIsGameOver(false);
                         return false;
                     }
                 }
             }
         }
-
+        // console.log(currentPlayer);
         // The current player has no legal moves
+        setIsGameOver(true);
         return true;
-    }, [board, fetchLegalMoves, currentPlayer]);
+    }, [board]);
 
     const fetchScores = useCallback(async ( piece: Piece, operand: string, oldX: number, oldY: number, newX: number, newY: number, oldScore: number) => {
         try {
+
             const response = await fetch('/api/get-scores', {
                 method: 'POST',
                 headers: {
@@ -152,13 +188,17 @@ const Board: React.FC<BoardProps> = ({score, setScore, scoreSheet, setScoreSheet
             let calculation = '';
             let oppositePiece = (piece.value === 'T') ? 'F' : 'T';
             let newScore = (score === updatedScore) ? score : updatedScore;
+            let newMoveNumber = moveNumber;
 
             if(Math.abs(newX - oldX) === 2 && Math.abs(newY - oldY) === 2) {
                 calculation += `${piece.value} ${operations[newY][newX]} ${oppositePiece}`;
             }
-            if(oldX !== newX && oldY !== newY) {
+            if(oldX !== newX && oldY !== newY && isPVP) {
+                newMoveNumber = newMoveNumber + 1;
+                console.log("Old move number", moveNumber);
+                console.log("New move number", newMoveNumber);
                 const newScoreNotation: ScoreNotation = {
-                    moveNumber: moveNumber + 1,
+                    moveNumber: newMoveNumber,
                     source: { x: oldX, y: oldY },
                     dest: { x: newX, y: newY },
                     calculation: calculation,
@@ -166,18 +206,21 @@ const Board: React.FC<BoardProps> = ({score, setScore, scoreSheet, setScoreSheet
                     total: newScore
                 };
 
-                setScoreSheet(prevScoreSheet => [...prevScoreSheet, newScoreNotation]);
+                const updatedScoreSheet = [...scoreSheet, newScoreNotation];
+                setScoreSheet(updatedScoreSheet);
                 // Update move number in Board state
-                setMoveNumber(old => moveNumber + 1);
-                // Check if game over
-                const isGameOver = await checkGameOver(moveNumber + 1);
-                if (isGameOver) {
-                    console.log("Game over boss - WITH CAPTURE");
-                }
+                setMoveNumber(newMoveNumber);
             }
+
             // Set the updated score
-            setScore(oldScore => updatedScore);
-            setMoveScore(oldScore => turnScore);
+            setScore(updatedScore);
+            setMoveScore(turnScore);
+
+            // Check if game over
+            const isGameOver = await checkGameOver(moveNumber + 1);
+            if (isGameOver) {
+                console.log("GameId over boss - WITH CAPTURE");
+            }
 
             // Return the updated score and turn score
             return { score: updatedScore, moveScore: turnScore };
@@ -185,21 +228,21 @@ const Board: React.FC<BoardProps> = ({score, setScore, scoreSheet, setScoreSheet
             console.error('Error fetching scores:', error);
             return { score: score, moveScore: 0 };
         }
-    }, [setScore, score, setMoveScore, setScoreSheet, moveNumber, checkGameOver]);
+    }, [moveNumber, score]); // move number
 
     const grabPiece = useCallback(async (e: React.MouseEvent) => {
-        if (!isDragging && !isLoading) {
+        if (!isDragging && !isLoading && playerPiece === currentPlayer) {
             setIsLoading(true);
             e.preventDefault();
             const element = e.target as HTMLElement;
             const boardElement = boardRef.current;
             if (element.classList.contains(tile_style.piece) && boardElement) {
-                const x = Math.floor((e.clientX - boardElement.offsetLeft) / 100);
-                const y = Math.floor((e.clientY - boardElement.offsetTop) / 100);
+                const x = Math.floor((e.clientX - boardElement.offsetLeft) / offset);
+                const y = Math.floor((e.clientY - boardElement.offsetTop) / offset);
 
                 const foundPiece = board[y][x];
 
-                if (foundPiece && foundPiece.value === currentPlayer) {
+                if (foundPiece && foundPiece.value === currentPlayer && foundPiece.isPiece) {
                     // Set states
                     setActivePiece({piece: foundPiece, index: {x, y}});
                     setIsDragging(true);  // Set isDragging to true
@@ -222,17 +265,17 @@ const Board: React.FC<BoardProps> = ({score, setScore, scoreSheet, setScoreSheet
             }
             setIsLoading(false);
         }
-    }, [isDragging, board, fetchLegalMoves, currentPlayer, fetchCanCapture, isLoading]);
+    }, [isDragging, playerPiece, isLoading, currentPlayer]);
 
     const dropPiece = useCallback(async () => {
-        if ((activePiece && activePiecePosition && !isLoading)) {
+        if ((activePiece && activePiecePosition && !isLoading) && playerPiece === currentPlayer) {
             setIsLoading(true);
             const {x: newX, y: newY} = activePiecePosition;
             const {x: oldX, y: oldY} = activePiece.index;
             let isCapture = false;
             let isDama = false;
             const isLegalMove = legalMoves.some(move => move.x === newX && move.y === newY);
-
+            let newMoveNumber = moveNumber;
             let movedPiece = {...activePiece.piece, x: newX, y: newY};
 
             // Check for promotion to Dama
@@ -247,27 +290,24 @@ const Board: React.FC<BoardProps> = ({score, setScore, scoreSheet, setScoreSheet
             }
 
             if (isLegalMove) {
-                setBoard(prevBoard => {
-                    const updatedBoard = [...prevBoard];
+                const updatedBoard = JSON.parse(JSON.stringify(board));
 
-                    // Check if the move is a capturing move
-                    if (Math.abs(newX - oldX) === 2 && Math.abs(newY - oldY) === 2) {
-                        // Find the captured piece
-                        const capturedX = (newX + oldX) / 2;
-                        const capturedY = (newY + oldY) / 2;
+                // Check if the move is a capturing move
+                if (Math.abs(newX - oldX) === 2 && Math.abs(newY - oldY) === 2) {
+                    // Find the captured piece
+                    const capturedX = (newX + oldX) / 2;
+                    const capturedY = (newY + oldY) / 2;
 
-                        // Remove the captured piece from the board
-                        updatedBoard[capturedY][capturedX] = null;
+                    // Remove the captured piece from the board
+                    updatedBoard[capturedY][capturedX] = EMPTY_CELL;
 
-                        // Calculate score here
-                        isCapture = true;
-                    }
+                    // Calculate score here
+                    isCapture = true;
+                }
 
-                    updatedBoard[newY][newX] = movedPiece;
-                    updatedBoard[oldY][oldX] = null;
-
-                    return updatedBoard;
-                });
+                updatedBoard[newY][newX] = movedPiece;
+                updatedBoard[oldY][oldX] = EMPTY_CELL;
+                setBoard(updatedBoard);
 
                 // After making a move, fetch the legal moves for the moved piece again
                 const updatedPiece = {...movedPiece};
@@ -291,39 +331,40 @@ const Board: React.FC<BoardProps> = ({score, setScore, scoreSheet, setScoreSheet
                     (canCapture && newPrevMove.capture && newPrevMove.type !== activePiece.piece.value))
                 {
                     // (isCapture && prevMove?.capture && prevMove?.type !== activePiece.piece.value) ||
-                    setCurrentPlayer(currentPlayer === 'T' ? 'F' : 'T');
+                    const updatedCurrentPlayer = currentPlayer === 'T' ? 'F' : 'T';
+                    setCurrentPlayer(updatedCurrentPlayer);
                     setActivePiece(null);
                 }
             } else {
-                setBoard(prevBoard => {
-                    const boardCopy = [...prevBoard];
-                    boardCopy[oldY][oldX] = activePiece.piece;
-                    return boardCopy;
-                });
+                const updatedBoard = JSON.parse(JSON.stringify(board));
+                updatedBoard[oldY][oldX] = activePiece.piece;
+                setBoard(updatedBoard);
             }
 
             // After making a move, update the scoreSheet (This is for normal moves)
             // See update of scoreSheet with capture in fetchScores function
-            if (!isCapture && oldX !== newX && oldY !== newY && isValidSquare(newX, newY)) {
+
+            if (!isCapture && oldX !== newX && oldY !== newY && isValidSquare(newX, newY) && isLegalMove) {
+                newMoveNumber = moveNumber + 1;
                 const newScoreNotation: ScoreNotation = {
-                    moveNumber: moveNumber + 1,
+                    moveNumber: newMoveNumber,
                     source: { x: oldX, y: oldY },
                     dest: { x: newX, y: newY },
                     calculation: '',
                     score: 0,
                     total: score
                 };
-                setScoreSheet(prevScoreSheet => [...prevScoreSheet, newScoreNotation]);
+                const updatedScoreSheet =  [...scoreSheet, newScoreNotation]
+                setScoreSheet(updatedScoreSheet);
                 // Update move number in Board state
-                setMoveNumber(old => moveNumber + 1);
+                setMoveNumber(newMoveNumber);
             }
 
             // Check if game over
             const isGameOver = await checkGameOver(moveNumber + 1);
             if (isGameOver) {
-                console.log("Game over boss - NO CAPTURE");
+                console.log("GameId over boss - NO CAPTURE");
             }
-
         }
 
         // setActivePiece(null);
@@ -331,15 +372,14 @@ const Board: React.FC<BoardProps> = ({score, setScore, scoreSheet, setScoreSheet
         setLegalMoves([]);
         setActivePiecePosition(null);
         setIsDragging(false);  // Set isDragging back to false
-        setMoveScore(() => 0);
-    }, [activePiece, activePiecePosition, board, isLoading, legalMoves, fetchLegalMoves, fetchScores, currentPlayer, moveNumber, score, setScoreSheet, checkGameOver]);
+    }, [activePiece, activePiecePosition, isLoading, playerPiece, currentPlayer]);
 
     const movePiece = useCallback((e: MouseEvent) => {
-        if (activePiece) {  // Only move the piece if it was grabbed
+        if (activePiece && (playerPiece === currentPlayer)) {  // Only move the piece if it was grabbed
             const boardElement = boardRef.current;
             if (boardElement) {
-                const x = Math.floor((e.clientX - boardElement.offsetLeft) / 100);
-                const y = Math.floor((e.clientY - boardElement.offsetTop) / 100);
+                const x = Math.floor((e.clientX - boardElement.offsetLeft) / offset);
+                const y = Math.floor((e.clientY - boardElement.offsetTop) / offset);
 
                 if (x >= 0 && x < 8 && y >= 0 && y < 8) {
                     setActivePiecePosition({ x, y });
@@ -352,107 +392,149 @@ const Board: React.FC<BoardProps> = ({score, setScore, scoreSheet, setScoreSheet
                 }
             }
         }
-    }, [activePiece, dropPiece]);
+    }, [activePiece, dropPiece, currentPlayer]);
 
     useEffect(() => {
+        // Delay before executing the computer move
+        const delay = 1000; // 1 second
+        let isCancelled = false;
+        let prevBestMove = null;
+
         const doComputerMove = async () => {
-            // Check if it's the computer's turn to play
-            if (currentPlayer === computerPlayer) {
-                let totalTurnScore = 0; // Track the total score for the turn
-                let newBoard = [...board]; // Create a copy of the current board
-                let bestMove = computerMove(newBoard, computerPlayer);
-                let initialSource = bestMove?.source; // Store the initial source of the move
-                let finalDest: LegalMove | null = null; // To store the final destination of the move
-                let newScoreSheet = [...scoreSheet];
-                let newMoveNumber = moveNumber;
-                let newScore = score;
-                let flag = true;
+            const timeoutId = setTimeout(async () => {
+                if (!isCancelled && (currentPlayer === computerPlayer) && !isPVP) {
+                    let totalTurnScore = 0; // Track the total score for the turn
+                    let newBoard = JSON.parse(JSON.stringify(board)); // Create a copy of the current board
+                    let bestMove = computerMove(newBoard, computerPlayer);
+                    prevBestMove = bestMove;
+                    let initialSource = bestMove?.source; // Store the initial source of the move
+                    let finalDest: LegalMove | null = null; // To store the final destination of the move
+                    let newScoreSheet = [...scoreSheet];
+                    let newMoveNumber = moveNumber;
+                    let newScore = score;
+                    let flag = true;
+                    let calculation = '';
+                    let oppositePiece = oppositePlayer(computerPlayer);
+                    let isCapture = false;
+                    while (flag && bestMove) {
+                        // Get the piece at the source
+                        const piece = newBoard[bestMove.source.y][bestMove.source.x];
+                        if (piece) {
+                            // Create a temporary copy of the piece with updated coordinates
+                            let tempPiece: Piece = { ...piece, x: bestMove.dest.x, y: bestMove.dest.y };
 
-                while (flag && bestMove) {
-                    // Get the piece at the source
-                    const piece = newBoard[bestMove.source.y][bestMove.source.x];
-                    if (piece) {
-                        // Create a temporary copy of the piece with updated coordinates
-                        let tempPiece: Piece = { ...piece, x: bestMove.dest.x, y: bestMove.dest.y };
+                            // Check if the move is a capturing move
+                            isCapture = Math.abs(bestMove.dest.x - bestMove.source.x) === 2 && Math.abs(bestMove.dest.y - bestMove.source.y) === 2;
 
-                        // Check if the move is a capturing move
-                        const isCapture = Math.abs(bestMove.dest.x - bestMove.source.x) === 2 && Math.abs(bestMove.dest.y - bestMove.source.y) === 2;
-                        if (isCapture) {
-                            // Find the captured piece
-                            const capturedX = (bestMove.dest.x + bestMove.source.x) / 2;
-                            const capturedY = (bestMove.dest.y + bestMove.source.y) / 2;
+                            let { source, dest } = bestMove;
+                            if (isCapture) {
+                                // Find the captured piece
+                                const capturedX = (bestMove.dest.x + bestMove.source.x) / 2;
+                                const capturedY = (bestMove.dest.y + bestMove.source.y) / 2;
 
-                            // Remove the captured piece from the board
-                            newBoard[capturedY][capturedX] = null;
+                                // Remove the captured piece from the board
+                                newBoard[capturedY][capturedX] = EMPTY_CELL;
 
-                            const { source, dest } = bestMove;
+                                if(Math.abs(dest.x - source.x) === 2 && Math.abs(dest.y - source.y) === 2) {
+                                    calculation += `${piece.value} ${operations[dest.y][dest.x]} ${oppositePiece}`;
+                                }
+                                // Call fetchScores with appropriate parameters
+                                await fetchScores(piece, operations[dest.y][dest.x], source.x, source.y, dest.x, dest.y, newScore)
+                                    .then(({ score: updatedScore , moveScore: turnScore }) => {
+                                        newMoveNumber = newMoveNumber + 1;
+                                        const newScoreNotation: ScoreNotation = {
+                                            moveNumber: newMoveNumber,
+                                            source: source,
+                                            dest: dest,
+                                            calculation: calculation,
+                                            score: turnScore,
+                                            total: updatedScore
+                                        };
+                                        totalTurnScore+=turnScore;
+                                        newScore = updatedScore;
+                                        newScoreSheet.push(newScoreNotation);
+                                    });
+                            } else {
+                                newMoveNumber = newMoveNumber + 1;
+                                const newScoreNotation: ScoreNotation = {
+                                    moveNumber: newMoveNumber,
+                                    source: source,
+                                    dest: dest,
+                                    calculation: calculation,
+                                    score: 0,
+                                    total: score
+                                };
+                                const updatedScoreSheet =  [...scoreSheet, newScoreNotation]
+                                setScoreSheet(updatedScoreSheet);
+                                // Update move number in Board state
+                                setMoveNumber(newMoveNumber);
+                            }
 
-                            // Call fetchScores with appropriate parameters
-                            await fetchScores(piece, operations[dest.y][dest.x], source.x, source.y, dest.x, dest.y, newScore)
-                                .then(({ score: updatedScore , moveScore: turnScore }) => {
-                                    console.log("Score updated", updatedScore, turnScore);
-                                    const newScoreNotation: ScoreNotation = {
-                                        moveNumber: newMoveNumber + 1,
-                                        source: source,
-                                        dest: dest,
-                                        calculation: '',
-                                        score: turnScore,
-                                        total: updatedScore
-                                    };
-                                    newMoveNumber+=1;
-                                    totalTurnScore+=turnScore;
-                                    newScore = updatedScore;
-                                    newScoreSheet.push(newScoreNotation);
-                                });
-                        }
+                            // Check for promotion to Dama
+                            if (tempPiece.value === 'T' && bestMove.dest.y === 0 && !tempPiece.isDama) {
+                                tempPiece.isDama = true;
+                                tempPiece.image = "/pieces/piece_true_dama.png"; // Update image to reflect promotion
+                            } else if (tempPiece.value === 'F' && bestMove.dest.y === 7 && !tempPiece.isDama) {
+                                tempPiece.isDama = true;
+                                tempPiece.image = "/pieces/piece_false_dama.png"; // Update image to reflect promotion
+                            }
 
-                        // Check for promotion to Dama
-                        if (tempPiece.value === 'T' && bestMove.dest.y === 0 && !tempPiece.isDama) {
-                            tempPiece.isDama = true;
-                            tempPiece.image = "/pieces/piece_true_dama.png"; // Update image to reflect promotion
-                        } else if (tempPiece.value === 'F' && bestMove.dest.y === 7 && !tempPiece.isDama) {
-                            tempPiece.isDama = true;
-                            tempPiece.image = "/pieces/piece_false_dama.png"; // Update image to reflect promotion
-                        }
+                            // Move the piece to the destination and clear the source
+                            newBoard[bestMove.dest.y][bestMove.dest.x] = tempPiece;
+                            newBoard[bestMove.source.y][bestMove.source.x] = EMPTY_CELL;
+                            // Update the board
+                            setBoard(newBoard);
 
-                        // Move the piece to the destination and clear the source
-                        newBoard[bestMove.dest.y][bestMove.dest.x] = tempPiece;
-                        newBoard[bestMove.source.y][bestMove.source.x] = null;
+                            // Store the final destination of the move if it's valid
+                            if (bestMove) finalDest = bestMove.dest;
 
-                        // Store the final destination of the move if it's valid
-                        if (bestMove) finalDest = bestMove.dest;
-
-
-                        // Check if there are more captures available
-                        const canCapture = getAllPossibleMoves(computerPlayer, newBoard).some(
-                            (move) => Math.abs(move.dest.x - move.source.x) === 2 && Math.abs(move.dest.y - move.source.y) === 2
-                        );
-                        // Continue with the next capture if available
-                        if (canCapture && isCapture) {
-                            bestMove = computerMove(newBoard, computerPlayer, tempPiece);
-                        } else {
-                            flag = false;
-                            bestMove = null; // End the loop
+                            // Check if there are more captures available
+                            const canCapture = getAllPossibleMoves(computerPlayer, newBoard).some(
+                                (move) => Math.abs(move.dest.x - move.source.x) === 2 && Math.abs(move.dest.y - move.source.y) === 2
+                            );
+                            // Continue with the next capture if available
+                            if (canCapture && isCapture) {
+                                calculation = '';
+                                bestMove = computerMove(newBoard, computerPlayer, tempPiece);
+                                console.log("BEST MOVE", bestMove);
+                                if (bestMove !=null && !isValidSquare(bestMove.dest.x, bestMove.dest.y)) {
+                                    flag = false;
+                                    bestMove = null;
+                                    console.log(" I STOPPED THE BUG HERE ");
+                                }
+                            } else {
+                                flag = false;
+                                bestMove = null; // End the loop
+                            }
                         }
                     }
+
+                    // Switch to the human player's turn
+                    const updatedCurrentPlayer = currentPlayer === 'T' ? 'F' : 'T';
+                    setCurrentPlayer(updatedCurrentPlayer);
+                    if(isCapture) {
+                       setScoreSheet(newScoreSheet);
+                    }
+                    setMoveNumber(newMoveNumber);
+                    setScore(newScore); // Update the total score
                 }
+                setIsLoading(false);
+                setLegalMoves([]);
+                setActivePiecePosition(null);
+                setIsDragging(false);
+            }, delay);
 
-                // Switch to the human player's turn
-                setCurrentPlayer(currentPlayer === 'T' ? 'F' : 'T');
-                setScoreSheet(newScoreSheet);
-                setMoveNumber((old) => newMoveNumber);
-                setScore(newScore); // Update the total score
-            }
-            setIsLoading(false);
-            setLegalMoves([]);
-            setActivePiecePosition(null);
-            setIsDragging(false);
-            setMoveScore(() => 0);
-        };
-
-        // Do computer move
-        doComputerMove();
-    }, [currentPlayer]);
+            // Cleanup function
+            return () => {
+                isCancelled = true; // Mark the effect as cancelled
+                clearTimeout(timeoutId); // Clear the timeout
+            };
+        }
+        if ((currentPlayer === computerPlayer) && !isPVP && moveNumber !== 0) {
+            console.log("Computer move");
+            doComputerMove();
+        }
+    }, [currentPlayer, isPVP]);
 
     useEffect(() => {
         const boardElement = boardRef.current;
@@ -474,23 +556,29 @@ const Board: React.FC<BoardProps> = ({score, setScore, scoreSheet, setScoreSheet
 
     for (let y = 0; y < 8; y++) {
         for (let x = 0; x < 8; x++) {
+            // if(!isValidSquare(x, y)) continue;
             const cellNum = x + y + 2;
             const currentPiece = board[y][x];
             const isActivePiece = activePiece?.piece === currentPiece;
-
             const pieceX = isActivePiece && activePiecePosition ? activePiecePosition.x : x;
             const pieceY = isActivePiece && activePiecePosition ? activePiecePosition.y : y;
 
-            // const isLegalMove = legalMoves.some(move => move.x === x && move.y === y);
-            const isLegalMove = currentPlayer !== computerPlayer && legalMoves.some(move => move.x === x && move.y === y);
+
+            let isLegalMove;
+            if(isPVP) {
+                isLegalMove = legalMoves.some(move => move.x === x && move.y === y);
+            } else {
+                isLegalMove = currentPlayer !== computerPlayer && legalMoves.some(move => move.x === x && move.y === y);
+            }
+            let displayLegalMoves = isLegalMove && isDragging;
 
             renderBoard.push(
                 <Tile
                     key={`${x},${y}`}
                     image={currentPiece?.image}
                     type={cellNum}
-                    isPiece={Boolean(currentPiece)}
-                    isLegalMove={isLegalMove}
+                    isPiece={currentPiece.isPiece}
+                    isLegalMove={displayLegalMoves}
                     x={pieceX}
                     y={pieceY}
                     operand={operations[y][x]}

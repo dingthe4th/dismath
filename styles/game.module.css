@@ -1,8 +1,16 @@
 .game {
      display: flex;
+     flex-direction: column;
      justify-content: center;
      align-items: center;
      height: 100vh;
      background-color: #202020;
+     gap: 20px;
+}
+
+.boardContainer {
+     display: flex;
+     justify-content: center;
+     align-items: flex-start;
      gap: 20px;
 }

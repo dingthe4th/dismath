@@ -1,7 +1,7 @@
 .scoreboard {
     display: flex;
     flex-direction: column;
-    height: 800px;
+    height: 600px;
     width: 50px;
     background-color: grey;
 }

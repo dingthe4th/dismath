@@ -45,8 +45,8 @@ export interface Move {
 
 export interface ScoreNotation {
     moveNumber: number;
-    source?: LegalMove;
-    dest?: LegalMove;
+    source: LegalMove;
+    dest: LegalMove;
     calculation: string;
     score: number;
     total: number;
@@ -61,3 +61,31 @@ export interface LegalComputerMove {
     source: { x: number; y: number };
     dest: { x: number; y: number };
 }
+
+export interface Player {
+    piece: 'T' | 'F' | null | undefined;
+    uid: string;
+    email: string;
+}
+
+export interface GameData {
+    player1: Player;
+    player2: Player;
+    status: 'waiting' | 'in progress' | 'finished';
+    isPVP: boolean;
+    firstTurn: 'T' | 'F' | null | undefined;
+    board?: (Piece | null)[][];
+    score?: number;
+    moves?: ScoreNotation[];
+    isGameOver?: boolean;
+    currentPlayer?: 'T' | 'F' | null | undefined;
+}
+
+export const EMPTY_CELL = {
+    image: "",
+    value: "",
+    x: -1,
+    y: -1,
+    isPiece: false,
+    isDama: false
+};

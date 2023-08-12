@@ -1,5 +1,5 @@
 import {NextApiRequest, NextApiResponse} from 'next';
-import {Piece} from '../../types/interface';
+import {EMPTY_CELL, Piece} from '../../types/interface';
 
 interface LegalMove {
     x: number; // x coordinate
@@ -44,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 
 // Function to calculate legal moves for a piece
-async function fetchLegalMoves(piece: Piece, board: (Piece | null)[][]): Promise<Array<{x: number, y: number}>> {
+async function fetchLegalMoves(piece: Piece, board: (Piece | typeof EMPTY_CELL)[][]): Promise<Array<{x: number, y: number}>> {
     // Prepare the return
     const captureMoves: LegalMove[] = [];
     const nonCaptureMoves: LegalMove[] = [];
@@ -70,7 +70,7 @@ async function fetchLegalMoves(piece: Piece, board: (Piece | null)[][]): Promise
 
         // Check if the next square in the same direction is within the board
         if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
-            if (board[newY][newX] === null) {
+            if (!board[newY][newX].isPiece) {
                 // If the square is empty, this is a non-capture move
                 nonCaptureMoves.push({ x: newX, y: newY });
             } else if (board[newY][newX]?.value !== piece.value) {
@@ -79,7 +79,7 @@ async function fetchLegalMoves(piece: Piece, board: (Piece | null)[][]): Promise
                 let captureY = newY + dir.y;
                 let captureX = newX + dir.x;
 
-                if (captureX >= 0 && captureX < 8 && captureY >= 0 && captureY < 8 && board[captureY][captureX] === null) {
+                if (captureX >= 0 && captureX < 8 && captureY >= 0 && captureY < 8 && !board[captureY][captureX].isPiece) {
                     // If the next square after capturing is empty, this is a capture move
                     captureMoves.push({ x: captureX, y: captureY });
                 }
@@ -93,7 +93,7 @@ async function fetchLegalMoves(piece: Piece, board: (Piece | null)[][]): Promise
 }
 
 // Function to determine if a move is a capture move
-function isCaptureMove(move: {x: number, y: number}, piece: Piece, board: (Piece | null)[][]): boolean {
+function isCaptureMove(move: {x: number, y: number}, piece: Piece, board: (Piece | typeof EMPTY_CELL)[][]): boolean {
     // If the absolute difference in x or y coordinates is 2, the move is a capture move
     return Math.abs(move.x - piece.x) === 2 && Math.abs(move.y - piece.y) === 2;
 }

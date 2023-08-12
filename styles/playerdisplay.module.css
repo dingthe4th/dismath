@@ -1,0 +1,14 @@
+.profileContainer {
+    text-align: center;
+    padding: 10px;
+}
+
+.playerVs {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.currentTurn {
+    font-size: 16px;
+    color: #555;
+}

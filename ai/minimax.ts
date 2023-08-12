@@ -1,6 +1,6 @@
-import {Piece, LegalMove, LegalComputerMove} from '../types/interface';
+import {Piece, LegalMove, LegalComputerMove, EMPTY_CELL} from '../types/interface';
 
-export function staticEvaluation(player_side: 'T' | 'F', board: (Piece | null)[][]): number {
+export function staticEvaluation(player_side: 'T' | 'F', board: (Piece | typeof EMPTY_CELL)[][]): number {
     let score = 0;
 
     for (let y = 0; y < board.length; y++) {
@@ -29,13 +29,12 @@ export function staticEvaluation(player_side: 'T' | 'F', board: (Piece | null)[]
     return score;
 }
 
-
 interface ComputerMove {
-    source: LegalMove;
-    dest: LegalMove;
+    source: LegalMove; // or { x: number; y: number }
+    dest: LegalMove;   // or { x: number; y: number }
 }
 
-export function getAllPossibleMoves(player_side: string, board: (Piece | null)[][]) {
+export function getAllPossibleMoves(player_side: string, board: (Piece | typeof EMPTY_CELL)[][]) {
     // Prepare the return values
     const captureMoves: LegalComputerMove[] = [];
     const nonCaptureMoves: LegalComputerMove[] = [];
@@ -67,7 +66,7 @@ export function getAllPossibleMoves(player_side: string, board: (Piece | null)[]
 
                     // Check if the next square in the same direction is within the board
                     if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
-                        if (board[newY][newX] === null) {
+                        if (!board[newY][newX].isPiece) {
                             // If the square is empty, this is a non-capture move
                             nonCaptureMoves.push({ source: { x, y }, dest: { x: newX, y: newY } });
                         } else if (board[newY][newX]?.value !== piece.value) {
@@ -76,7 +75,7 @@ export function getAllPossibleMoves(player_side: string, board: (Piece | null)[]
                             let captureY = newY + dir.y;
                             let captureX = newX + dir.x;
 
-                            if (captureX >= 0 && captureX < 8 && captureY >= 0 && captureY < 8 && board[captureY][captureX] === null) {
+                            if (captureX >= 0 && captureX < 8 && captureY >= 0 && captureY < 8 && !board[captureY][captureX].isPiece) {
                                 // If the next square after capturing is empty, this is a capture move
                                 captureMoves.push({ source: { x, y }, dest: { x: captureX, y: captureY } });
                             }
@@ -96,7 +95,7 @@ export function oppositePlayer(player_side: string): 'T' | 'F' {
     return player_side === 'T' ? 'F' : 'T';
 }
 
-export function MMAB(depth: number, player_side: 'T' | 'F', alpha: number, beta: number, board: (Piece | null)[][]): number {
+export function MMAB(depth: number, player_side: 'T' | 'F', alpha: number, beta: number, board: (Piece | typeof EMPTY_CELL)[][]): number {
     if (depth === 0) {
         return staticEvaluation(player_side, board); // Define static_evaluation function as needed
     }
@@ -136,7 +135,7 @@ export function MMAB(depth: number, player_side: 'T' | 'F', alpha: number, beta:
     }
 }
 
-export function applyMove(board: (Piece | null)[][], move: ComputerMove, piece: Piece): (Piece | null)[][] {
+export function applyMove(board: (Piece | typeof EMPTY_CELL)[][], move: ComputerMove, piece: Piece): (Piece | typeof EMPTY_CELL)[][] {
     const { source, dest } = move;
     const newBoard = JSON.parse(JSON.stringify(board));
 
@@ -144,12 +143,12 @@ export function applyMove(board: (Piece | null)[][], move: ComputerMove, piece: 
     newBoard[dest.y][dest.x] = piece;
 
     // Clear the source square
-    newBoard[source.y][source.x] = null;
+    newBoard[source.y][source.x] = EMPTY_CELL;
 
     return newBoard;
 }
 
-export function computerMove(board: (Piece | null)[][], player_side: string,  selectedPiece?: Piece): ComputerMove | null {
+export function computerMove(board: (Piece | typeof EMPTY_CELL)[][], player_side: string,  selectedPiece?: Piece): ComputerMove | null {
     // Determine the best move using the Minimax algorithm with Alpha-Beta pruning
     let bestScore = -Infinity;
     let bestMove: ComputerMove | null = null;

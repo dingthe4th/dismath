@@ -17,7 +17,7 @@ const Login = () => {
         try {
             setErrorMessage("")
             await signInWithEmailAndPassword(firebaseAuth, email, password)
-            router.push("/dashboard")
+            router.beforePopState();
         } catch (e) {
             setErrorMessage(e?.message ?? 'Failed to register. Try again later.')
         }
