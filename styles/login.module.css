@@ -1,0 +1,83 @@
+.loginContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    max-width: 600px;
+    min-height: 400px;
+    margin: auto;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.inputGroup label {
+    margin-bottom: 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.inputGroup input {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: var(--border-radius);
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 18px;
+    outline: none;
+    min-width: 350px;
+}
+
+.errorMessage {
+    color: #ef2727;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 18px;
+}
+
+.loginButton {
+    width: 100%;
+    padding: 15px;
+    font-size: 21px;
+    border: none;
+    border-radius: var(--border-radius);
+    background-color: #779556;
+    color: white;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 50px;
+}
+
+.loginButton:hover {
+    background-color: #557939;
+}
+
+.registerLink {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 16px;
+    color: white;
+}
+
+.registerLink a {
+    color: #557939;
+    text-decoration: underline;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.registerLink a:hover {
+    color: #779556;
+}
+

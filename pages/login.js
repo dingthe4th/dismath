@@ -3,6 +3,9 @@ import { useRouter } from 'next/router';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { firebaseAuth } from '../firebase-config/config'
+import styles from '../styles/login.module.css';
+import Link from "next/link";
+import Loading from "../components/loading";
 
 const Login = () => {
     const router = useRouter()
@@ -23,50 +26,62 @@ const Login = () => {
         }
     }
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
     if (user) {
-        router.push("/dashboard")
-        return <div>You are already signed in!</div>;
+        router.push("/")
+        return <Loading />;
     }
 
     return (
-        <div>
-            <div style={{ marginBottom: "10px" }}>
-                <label style={{ marginRight: "10px" }}>Email</label>
-                <input
-                    type="text"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                />
-            </div>
+        <div className={"container"}>
+            <header className={"header"}>
+                <div className={"logo"}>
+                    <Link href="/">
+            <span>
+              <img src="/static/default_logo.png" alt="Discrete Damath Logo" />
+            </span>
+                    </Link>
+                </div>
+                <nav className={"navigation"}>
+                    <ul>
+                        <li>
+                            <Link href="/">Home</Link>
+                        </li>
+                        <li>
+                            <Link href="/how-to-play">How to Play</Link>
+                        </li>
+                        <li>
+                            <Link href="/about">About</Link>
+                        </li>
+                    </ul>
+                </nav>
+            </header>
+            <div className={"cover"}>
+                <div className={"overlay"}>
+                    <div className={styles.loginContainer}>
+                        <div className={styles.inputGroup}>
+                            <label>Email</label>
+                            <input type="text" value={email} onChange={(event) => setEmail(event.target.value)} />
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <label>Password</label>
+                            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+                        </div>
+                        {errorMessage.length > 0 && <p className={styles.errorMessage}>{errorMessage}</p>}
+                        <button className={styles.loginButton} onClick={loginUser}>
+                            LOGIN
+                        </button>
+                        <div className={styles.registerLink}>
+                            <p>Don't have an account? <Link href="/register">Register</Link></p>
+                        </div>
 
-            <div style={{ marginBottom: "20px" }}>
-                <label style={{ marginRight: "10px" }}>Password</label>
-                <input
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                />
+                    </div>
+                </div>
             </div>
-
-            {errorMessage.length > 0 ? <p style={{ color: "red", fontWeight: "bold" }}>{errorMessage}</p> : <></>}
-
-            <div>
-                <button
-                    onClick={loginUser}
-                    style={{
-                        fontSize: "21px",
-                        padding: "10px",
-                    }}
-                >
-                    LOGIN
-                </button>
-            </div>
+            <footer className={"footer"}>
+                <p>&copy; Discrete Damath, All rights reserved.</p>
+            </footer>
         </div>
-    )
+    );
 }
 
 export default Login

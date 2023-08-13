@@ -1,14 +1,18 @@
 // create-game.js
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import { app } from '../firebase-config/config';
-import { getDatabase, ref, push, set, onValue, off } from 'firebase/database';
-import { getAuth } from 'firebase/auth';
+import React, {useEffect, useState} from 'react';
+import {useRouter} from 'next/router';
+import {app, firebaseAuth} from '../firebase-config/config';
+import {getDatabase, onValue, push, ref, set} from 'firebase/database';
+import {getAuth} from 'firebase/auth';
 import {initializeBoard} from "../components/board";
+import Link from "next/link";
+import styles from '../styles/creategame.module.css';
+import {useAuthState} from "react-firebase-hooks/auth";
 
 const CreateGame = () => {
-    const [roomId, setRoomId] = useState('');
     const router = useRouter();
+    const [roomId, setRoomId] = useState('');
+    const [user, loading] = useAuthState(firebaseAuth);
 
     const createGame = () => {
         const db = getDatabase(app);
@@ -26,7 +30,6 @@ const CreateGame = () => {
             firstTurn: firstMovePlayer,
             moves: [],
             currentPlayer: firstMovePlayer,
-            // Other parameters if needed
         };
 
         console.log("Player 1 created with uid: " + initialData.player1.uid, ' and piece is: ', initialData.player1.piece);
@@ -43,9 +46,6 @@ const CreateGame = () => {
                         router.push(`/game/${uniqueRoomId}`);
                     }
                 });
-            })
-            .catch((error) => {
-                // Handle any errors
             });
     };
 
@@ -63,9 +63,47 @@ const CreateGame = () => {
     }, [roomId]);
 
     return (
-        <div>
-            <button onClick={createGame}>Create Game</button>
-            {roomId && <p>Your Room ID: {roomId}</p>}
+        <div className={"container"}>
+            <header className={"header"}>
+                <div className={"logo"}>
+                    <Link href="/">
+                        <span>
+                            <img src="/static/default_logo.png" alt="Discrete Damath Logo" />
+                        </span>
+                    </Link>
+                </div>
+                <nav className={"navigation"}>
+                    <ul>
+                        <li>
+                            <Link href="/">Home</Link>
+                        </li>
+                        <li>
+                            <Link href="/how-to-play">How to Play</Link>
+                        </li>
+                        <li>
+                            <Link href="/about">About</Link>
+                        </li>
+                    </ul>
+                </nav>
+            </header>
+
+            <div className={"cover"}>
+                <div className={"overlay"}>
+                    <button className={styles.createGameButton} onClick={createGame}>
+                        Create Game
+                    </button>
+                    {roomId && (
+                        <div className={styles.roomInfo}>
+                            <p>Invite someone to play using this room ID:</p>
+                            <h1>{roomId}</h1>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <footer className="footer">
+                <p>&copy; Discrete Damath, All rights reserved.</p>
+            </footer>
         </div>
     );
 };

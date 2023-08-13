@@ -16,8 +16,7 @@ const initialState: GameState = {
     moveNumber: 0,
 };
 
-type BoardRow = (Piece | typeof EMPTY_CELL)[];
-
+export type BoardRow = (Piece | typeof EMPTY_CELL)[];
 
 const gameSlice = createSlice({
     name: 'game',

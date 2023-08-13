@@ -4,27 +4,22 @@ import styles from '../styles/home.module.css';
 
 const Home = () => {
     return (
-        <div>
-            <header className={styles.header}>
-                <div className={styles.logo}>
+        <div className={"container"}>
+            <header className={"header"}>
+                <div className={"logo"}>
                     <Link href="/">
-            <span>
-              <img src="/static/default_banner.jpg" alt="Dismath Checkers Logo" />
-            </span>
+                        <span>
+                            <img src="/static/default_logo.png" alt="Discrete Damath Logo" />
+                        </span>
                     </Link>
                 </div>
-                <nav className={styles.navigation}>
+                <nav className={"navigation"}>
                     <ul>
                         <li>
-                            <Link href="/" className={styles.link}>
-                                Home
-                            </Link>
+                            <Link href="/">Home</Link>
                         </li>
                         <li>
                             <Link href="/how-to-play">How to Play</Link>
-                        </li>
-                        <li>
-                            <Link href="/high-score">High Score</Link>
                         </li>
                         <li>
                             <Link href="/about">About</Link>
@@ -33,31 +28,28 @@ const Home = () => {
                 </nav>
             </header>
 
-            <div className={styles.cover}>
-                <div className={styles.overlay}>
+            <div className={"cover"}>
+                <div className={"overlay"}>
                     <div className={styles.logoCenter}>
                         <Link href="/">
-              <span>
-                <img src="/static/default_logo.png" alt="Dismath Checkers Fancy Photo" />
-              </span>
+                          <span>
+                            <img src="/static/default_logo.png" alt="Discrete Damath Fancy Photo" />
+                          </span>
                         </Link>
                     </div>
-                    <h1>Dismath Checkers</h1>
                     <div className={styles.buttons}>
                         <Link href="/play-human">
-                            <button>Play vs Human</button>
+                            <button className={styles.gameButton}>Play vs Human</button>
                         </Link>
                         <Link href="/play-computer">
-                            <button>Play vs Computer</button>
+                            <button className={styles.gameButton}>Play vs Computer</button>
                         </Link>
                     </div>
                 </div>
             </div>
 
-            {/* ...rest of the content here... */}
-
-            <footer className={styles.footer}>
-                <p>&copy; Dismath Checkers, All rights reserved.</p>
+            <footer className={"footer"}>
+                <p>&copy; Discrete Damath, All rights reserved.</p>
             </footer>
         </div>
     );

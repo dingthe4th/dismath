@@ -1,0 +1,94 @@
+.container {
+    background-image: url("/static/default_banner.jpg");
+    background-size: cover;
+    background-position: center;
+    width: 100vw;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    color: #fff;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+}
+
+.logo img {
+    width: 100px;
+}
+
+.navigation ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+.navigation li {
+    font-size: 18px;
+}
+
+.navigation li:last-child {
+    margin-right: 20px;
+}
+
+.navigation a {
+    text-decoration: none;
+    color: #fff;
+}
+
+.content {
+    margin: 0 auto;
+    padding: 20px 15%;
+    line-height: 1.6;
+}
+
+.content h1,
+.content h3 {
+    color: #fff;
+}
+
+.content p,
+.content ul {
+    font-size: 18px;
+}
+
+.content p {
+    margin-bottom: 20px;
+}
+.content ul {
+    margin-left: 50px;
+    margin-bottom: 10px;
+}
+
+.content a {
+    color: #e0a800;
+    text-decoration: none;
+}
+
+.content a:hover {
+    text-decoration: underline;
+}
+
+.content iframe {
+    display: block;
+    margin: 20px auto;
+}
+
+.footer {
+    text-align: center;
+    padding: 20px 0;
+    font-size: 14px;
+    color: #999;
+}
+
+.footer p {
+    margin: 0;
+}
+
+.header,
+.footer {
+    padding: 0 15%;
+}

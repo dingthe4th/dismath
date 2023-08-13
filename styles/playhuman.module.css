@@ -1,0 +1,34 @@
+.buttonContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+}
+
+.gameButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 200px;
+    height: 200px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #779556;
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    padding: 20px;
+}
+
+.gameButton img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+.gameButton:hover {
+    background-color: #557939;
+}

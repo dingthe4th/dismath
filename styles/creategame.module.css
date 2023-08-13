@@ -1,0 +1,45 @@
+.createGameButton {
+    display: inline-block;
+    width: 300px;
+    height: 100px;
+    font-size: 32px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    background-color: #779556;
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    text-align: center;
+    padding: 20px;
+    margin: 20px auto;
+}
+
+.createGameButton:hover {
+    background-color: #557939;
+    transform: scale(1.05);
+}
+
+.roomInfo {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    margin-top: 20px;
+}
+
+.roomInfo p {
+    margin-bottom: 10px;
+}
+
+.roomInfo a {
+    color: #007bff;
+    text-decoration: underline;
+    font-size: 20px;
+}
+
+.roomInfo a:hover {
+    color: #0056b3;
+    text-decoration: none;
+}

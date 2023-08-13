@@ -1,0 +1,41 @@
+.inputContainer {
+    text-align: center;
+}
+
+.roomInput {
+    width: 400px;
+    height: 50px;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 5px;
+    border: none;
+    padding-left: 10px;
+    color: #202020;
+    background-color: white;
+    margin-bottom: 20px;
+}
+
+.joinButton {
+    display: inline-block;
+    width: 300px;
+    height: 60px;
+    font-size: 24px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    background-color: #779556;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.joinButton:hover {
+    background-color: #557939;
+}
+
+.errorMessage {
+    color: #ef2727;
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 10px;
+}

@@ -5,6 +5,8 @@ import Tile from "./tile";
 import {ActivePiece, EMPTY_CELL, LegalMove, Piece, ScoreNotation} from "../types/interface";
 import {computerMove, getAllPossibleMoves, oppositePlayer} from "../ai/minimax";
 import {clearTimeout} from "timers";
+import gameover from "./gameover";
+import {BoardRow} from "../redux/gameSlice";
 
 export interface BoardProps {
     currentPlayer: 'T' | 'F' | null | undefined;
@@ -60,6 +62,9 @@ const isValidSquare = (x: number, y: number) => {
     return !(y % 2 === 1 && x % 2 === 1); // Both odd
 }
 
+// Game over flag
+let gameOver = false;
+
 // Actual board object
 const Board: React.FC<BoardProps> = ({score,
                                          setScore,
@@ -86,7 +91,7 @@ const Board: React.FC<BoardProps> = ({score,
     const [prevMove, setPrevMove] = useState<{ capture: boolean; type: string } | null>(() => null);
     const [computerTurn, setComputerTurn] = useState(() => false);
     const boardRef = useRef<HTMLDivElement>(null);
-    const offset = 75;
+    const offset = 80;
 
     const fetchCanCapture = useCallback(async (selectedPiece: Piece, board: (Piece | typeof EMPTY_CELL)[][], currentPlayer: 'F' | 'T') => {
         try {
@@ -126,51 +131,6 @@ const Board: React.FC<BoardProps> = ({score,
             return [];
         }
     }, []);
-
-    const checkGameOver = useCallback(async (moveNumber : number) => {
-        // Count the pieces for each player
-        const tPieces = board.flat().filter(piece => piece?.value === 'T').length;
-        const fPieces = board.flat().filter(piece => piece?.value === 'F').length;
-
-        if (tPieces === 0 || fPieces === 0) {
-            // One of the players has no more pieces left
-            console.log("GAME OVER THERE IS NO MORE PIECES LEFT")
-            setIsGameOver(true);
-            return true;
-        }
-
-        // Check if the game reaches move 100
-        // TODO: Check average game moves, add 30 to that, that's the limit
-        if (moveNumber === 70) {
-            console.log("GAME OVER BECAUSE OF MOVES")
-            setIsGameOver(true);
-            return true;
-        }
-
-        // Check if the current player has any legal moves
-        for (let y = 0; y < 8; y++) {
-            for (let x = 0; x < 8; x++) {
-
-                // TODO: Untested 8-7-23 0526H
-                // if(!isValidSquare(x, y)) continue;
-
-                const piece = board[y][x];
-                if (piece && piece.value === currentPlayer) {
-                    const legalMoves = await fetchLegalMoves(piece, board);
-
-                    if (legalMoves.length > 0) {
-                        // The current player has at least one legal move
-                        setIsGameOver(false);
-                        return false;
-                    }
-                }
-            }
-        }
-        // console.log(currentPlayer);
-        // The current player has no legal moves
-        setIsGameOver(true);
-        return true;
-    }, [board]);
 
     const fetchScores = useCallback(async ( piece: Piece, operand: string, oldX: number, oldY: number, newX: number, newY: number, oldScore: number) => {
         try {
@@ -216,12 +176,6 @@ const Board: React.FC<BoardProps> = ({score,
             setScore(updatedScore);
             setMoveScore(turnScore);
 
-            // Check if game over
-            const isGameOver = await checkGameOver(moveNumber + 1);
-            if (isGameOver) {
-                console.log("GameId over boss - WITH CAPTURE");
-            }
-
             // Return the updated score and turn score
             return { score: updatedScore, moveScore: turnScore };
         } catch (error) {
@@ -231,18 +185,21 @@ const Board: React.FC<BoardProps> = ({score,
     }, [moveNumber, score]); // move number
 
     const grabPiece = useCallback(async (e: React.MouseEvent) => {
+        // let tempBoard = board.map((row: BoardRow) => [...row]);
+        console.log(isDragging, isLoading, playerPiece, currentPlayer);
         if (!isDragging && !isLoading && playerPiece === currentPlayer) {
             setIsLoading(true);
             e.preventDefault();
             const element = e.target as HTMLElement;
             const boardElement = boardRef.current;
             if (element.classList.contains(tile_style.piece) && boardElement) {
-                const x = Math.floor((e.clientX - boardElement.offsetLeft) / offset);
-                const y = Math.floor((e.clientY - boardElement.offsetTop) / offset);
+                const x = Math.abs(Math.floor((e.clientX - boardElement.offsetLeft) / offset));
+                const y = Math.abs( Math.floor((e.clientY - boardElement.offsetTop) / offset));
 
                 const foundPiece = board[y][x];
 
-                if (foundPiece && foundPiece.value === currentPlayer && foundPiece.isPiece) {
+                if (foundPiece && foundPiece.value === currentPlayer && foundPiece.isPiece && isValidSquare(x,y)) {
+                    console.log(`Found piece: ${foundPiece.value}`);
                     // Set states
                     setActivePiece({piece: foundPiece, index: {x, y}});
                     setIsDragging(true);  // Set isDragging to true
@@ -263,8 +220,8 @@ const Board: React.FC<BoardProps> = ({score,
                     // }
                 }
             }
-            setIsLoading(false);
         }
+        setIsLoading(false);
     }, [isDragging, playerPiece, isLoading, currentPlayer]);
 
     const dropPiece = useCallback(async () => {
@@ -282,16 +239,13 @@ const Board: React.FC<BoardProps> = ({score,
             if (movedPiece.value === 'T' && newY === 0 && !movedPiece.isDama) {
                 movedPiece.isDama = true;
                 movedPiece.image = "/pieces/piece_true_dama.png"; // Update image to reflect promotion
-                isDama = true;
             } else if (movedPiece.value === 'F' && newY === 7 && !movedPiece.isDama) {
                 movedPiece.isDama = true;
                 movedPiece.image = "/pieces/piece_false_dama.png"; // Update image to reflect promotion
-                isDama = true;
             }
 
             if (isLegalMove) {
                 const updatedBoard = JSON.parse(JSON.stringify(board));
-
                 // Check if the move is a capturing move
                 if (Math.abs(newX - oldX) === 2 && Math.abs(newY - oldY) === 2) {
                     // Find the captured piece
@@ -307,6 +261,7 @@ const Board: React.FC<BoardProps> = ({score,
 
                 updatedBoard[newY][newX] = movedPiece;
                 updatedBoard[oldY][oldX] = EMPTY_CELL;
+                console.log("New X: ", newX, "New Y: ", newY);
                 setBoard(updatedBoard);
 
                 // After making a move, fetch the legal moves for the moved piece again
@@ -359,12 +314,6 @@ const Board: React.FC<BoardProps> = ({score,
                 // Update move number in Board state
                 setMoveNumber(newMoveNumber);
             }
-
-            // Check if game over
-            const isGameOver = await checkGameOver(moveNumber + 1);
-            if (isGameOver) {
-                console.log("GameId over boss - NO CAPTURE");
-            }
         }
 
         // setActivePiece(null);
@@ -372,14 +321,14 @@ const Board: React.FC<BoardProps> = ({score,
         setLegalMoves([]);
         setActivePiecePosition(null);
         setIsDragging(false);  // Set isDragging back to false
-    }, [activePiece, activePiecePosition, isLoading, playerPiece, currentPlayer]);
+    }, [activePiece, activePiecePosition, isLoading, currentPlayer]);
 
     const movePiece = useCallback((e: MouseEvent) => {
         if (activePiece && (playerPiece === currentPlayer)) {  // Only move the piece if it was grabbed
             const boardElement = boardRef.current;
             if (boardElement) {
-                const x = Math.floor((e.clientX - boardElement.offsetLeft) / offset);
-                const y = Math.floor((e.clientY - boardElement.offsetTop) / offset);
+                const x = Math.abs(Math.floor((e.clientX - boardElement.offsetLeft) / offset));
+                const y = Math.abs(Math.floor((e.clientY - boardElement.offsetTop) / offset));
 
                 if (x >= 0 && x < 8 && y >= 0 && y < 8) {
                     setActivePiecePosition({ x, y });
@@ -393,6 +342,51 @@ const Board: React.FC<BoardProps> = ({score,
             }
         }
     }, [activePiece, dropPiece, currentPlayer]);
+
+    useEffect(() => {
+        let gameOverFlag = 0;
+        console.log("GAMEOVERRRRRRR?");
+        const checkGameOver = async() => {
+            // Count the pieces for each player
+            const tPieces = board.flat().filter(piece => piece?.value === 'T').length;
+            const fPieces = board.flat().filter(piece => piece?.value === 'F').length;
+
+            if (tPieces === 0 || fPieces === 0) {
+                // One of the players has no more pieces left
+                console.log("GAME OVER THERE IS NO MORE PIECES LEFT")
+                setIsGameOver(true);
+            }
+
+            // Check if the game reaches move 100
+            // TODO: Check average game moves, add 30 to that, that's the limit
+            if (moveNumber === 70) {
+                console.log("GAME OVER BECAUSE OF MOVES")
+                setIsGameOver(true);
+            }
+
+            // Check if the current player has any legal moves
+            for (let y = 0; y < 8; y++) {
+                for (let x = 0; x < 8; x++) {
+
+                    // TODO: Untested 8-7-23 0526H
+                    if(!isValidSquare(x, y)) continue;
+
+                    const piece = board[y][x];
+                    if (piece && piece.value === currentPlayer) {
+                        const legalMoves = await fetchLegalMoves(piece, board);
+                        if (legalMoves.length > 0) {
+                            // The current player has at least one legal move
+                            setIsGameOver(false);
+                            gameOverFlag++;
+                        }
+                    }
+                }
+            }
+
+            setIsGameOver(gameOverFlag === 0);
+        }
+        checkGameOver();
+    }, [moveNumber, scoreSheet, currentPlayer]);
 
     useEffect(() => {
         // Delay before executing the computer move
@@ -518,10 +512,10 @@ const Board: React.FC<BoardProps> = ({score,
                     setMoveNumber(newMoveNumber);
                     setScore(newScore); // Update the total score
                 }
+
                 setIsLoading(false);
                 setLegalMoves([]);
                 setActivePiecePosition(null);
-                setIsDragging(false);
             }, delay);
 
             // Cleanup function
@@ -564,7 +558,7 @@ const Board: React.FC<BoardProps> = ({score,
             const pieceY = isActivePiece && activePiecePosition ? activePiecePosition.y : y;
 
 
-            let isLegalMove;
+            let isLegalMove : boolean;
             if(isPVP) {
                 isLegalMove = legalMoves.some(move => move.x === x && move.y === y);
             } else {
@@ -577,7 +571,7 @@ const Board: React.FC<BoardProps> = ({score,
                     key={`${x},${y}`}
                     image={currentPiece?.image}
                     type={cellNum}
-                    isPiece={currentPiece.isPiece}
+                    // isPiece={currentPiece.isPiece}
                     isLegalMove={displayLegalMoves}
                     x={pieceX}
                     y={pieceY}

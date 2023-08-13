@@ -1,41 +1,53 @@
-import { useDispatch, useSelector } from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import debounce from "lodash.debounce";
 import {
-    setGameData,
     setBoard,
-    setScore,
-    setScoreSheet,
-    setIsGameOver,
-    setFirstTurn,
     setCurrentPlayer,
+    setFirstTurn,
+    setGameData,
+    setIsGameOver,
     setIsPVP,
     setMoveNumber,
+    setScore,
+    setScoreSheet,
 } from '../../redux/gameSlice';
-import { RootState } from "../../store";
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import {getDatabase, ref, onValue, off, set, DatabaseReference, push, update} from 'firebase/database';
-import Board, { initializeBoard } from '../../components/board';
+import {RootState} from "../../store";
+import {useRouter} from 'next/router';
+import {useEffect, useState} from 'react';
+import {getDatabase, off, onValue, ref, remove, set} from 'firebase/database';
+import Board, {initializeBoard} from '../../components/board';
 import ScoreBar from '../../components/scorebar';
 import ScoreSheet from '../../components/scoresheet';
+import GameOverPopup from "../../components/gameover";
 import styles from '../../styles/game.module.css';
-import { EMPTY_CELL, GameData, Piece, ScoreNotation } from '../../types/interface';
-import { app } from '../../firebase-config/config';
-import { getAuth } from 'firebase/auth';
+import {app} from '../../firebase-config/config';
+import {getAuth} from 'firebase/auth';
 import PlayerDisplay from "../../components/playerdisplay";
+import Link from "next/link";
+
 export default function Game() {
 
     const dispatch = useDispatch();
+    const router = useRouter();
+    const { gameId } = router.query;
+    const db = getDatabase(app);
+    const roomRef = ref(db, `rooms/${gameId}`);
+
     const updateCurrentPlayer = (currentPlayer: string | null | undefined) => {
         if (currentPlayer !== null && currentPlayer !== undefined) {
             dispatch(setCurrentPlayer(currentPlayer));
         }
     };
 
-    const router = useRouter();
-    const { gameId } = router.query;
-    const db = getDatabase(app);
-    const roomRef = ref(db, `rooms/${gameId}`);
+    const handleRestart = () => {
+        if (isGameOver) {
+            // Remove the game room from the database
+            remove(roomRef).then(() => {
+                console.log('Game room removed');
+            });
+        }
+        router.push('/');
+    };
 
     const gameData = useSelector((state: RootState) => state.game.gameData);
     const board = useSelector((state: RootState) => state.game.board);
@@ -47,11 +59,22 @@ export default function Game() {
     const isPVP = useSelector((state: RootState) => state.game.isPVP);
     const moveNumber = useSelector((state: RootState) => state.game.moveNumber);
     const [isLoading, setIsLoading] = useState(false);
+    const winner = score > 0 ? 'T' : (score === 0 ? 'Draw' : 'F');
+    const delay = 500;
 
     useEffect(() => {
         if (gameId && db) {
             const unsubscribe = onValue(roomRef, (snapshot) => {
                 const data = snapshot.val();
+
+                // Handle disconnections:
+                if (!data) {
+                    // If data is null, the room has been deleted or does not exist
+                    console.log('Game Over: One of the players has disconnected');
+                    dispatch(setIsGameOver(true));
+                    return;
+                }
+
                 dispatch(setGameData(data));
                 dispatch(setBoard(data.board || initializeBoard()));
                 dispatch(setScore(data.score || 0));
@@ -87,7 +110,7 @@ export default function Game() {
                 }).then(() => {
                     setIsLoading(false); // Clear loading state
                 });
-            }, 500); // Debounce time in milliseconds
+            }, delay); // Debounce time in milliseconds
 
             debounceWrite();
 
@@ -105,33 +128,73 @@ export default function Game() {
     if (!gameData) return <div>Loading...</div>;
 
     return (
-        <div className={styles.game}>
-            <PlayerDisplay
-                player1={gameData.player1}
-                player2={gameData.player2}
-                currentPlayer={currentPlayer}
-                isPVP={isPVP}
-            />
-            <div className={styles.boardContainer}>
-                <ScoreBar score={score} />
-                <Board
-                    setScore={(value) => dispatch(setScore(value))}
-                    score={score}
-                    scoreSheet={scoreSheet}
-                    setScoreSheet={(value) => dispatch(setScoreSheet(value))}
-                    playerPiece={playerPiece}
-                    isPVP={isPVP}
-                    setIsGameOver={(value) => dispatch(setIsGameOver(value))}
-                    board={board}
-                    setBoard={(value) => dispatch(setBoard(value))}
-                    firstTurn={firstTurn}
-                    currentPlayer={currentPlayer}
-                    setCurrentPlayer={(value) => dispatch(setCurrentPlayer(value))}
-                    moveNumber={moveNumber}
-                    setMoveNumber={(value) => dispatch(setMoveNumber(value))}
-                />
-                <ScoreSheet scoreSheet={scoreSheet} />
+        <div className="container">
+            <header className="header">
+                <div className="logo">
+                    <Link href="/">
+                        <span>
+                            <img src="/static/default_banner.jpg" alt="Dismath Checkers Logo" />
+                        </span>
+                    </Link>
+                </div>
+                <nav className="navigation">
+                    <ul>
+                        <li>
+                            <Link href="/">Home</Link>
+                        </li>
+                        <li>
+                            <Link href="/how-to-play">How to Play</Link>
+                        </li>
+                        <li>
+                            <Link href="/about">About</Link>
+                        </li>
+                    </ul>
+                </nav>
+            </header>
+            <div className="cover">
+                <div className="overlay">
+                    <div className={styles.game}>
+                        {isGameOver && (
+                            <GameOverPopup
+                                winner={winner}
+                                score={score}
+                                scoreSheet={scoreSheet}
+                                gameId={gameId}
+                                onRestart={handleRestart}
+                            />
+                        )}
+                        <PlayerDisplay
+                            player1={gameData.player1}
+                            player2={gameData.player2}
+                            currentPlayer={currentPlayer}
+                            isPVP={isPVP}
+                        />
+                        <div className={styles.boardContainer}>
+                            <ScoreBar score={score} />
+                            <Board
+                                setScore={(value) => dispatch(setScore(value))}
+                                score={score}
+                                scoreSheet={scoreSheet}
+                                setScoreSheet={(value) => dispatch(setScoreSheet(value))}
+                                playerPiece={playerPiece}
+                                isPVP={isPVP}
+                                setIsGameOver={(value) => dispatch(setIsGameOver(value))}
+                                board={board}
+                                setBoard={(value) => dispatch(setBoard(value))}
+                                firstTurn={firstTurn}
+                                currentPlayer={currentPlayer}
+                                setCurrentPlayer={(value) => dispatch(setCurrentPlayer(value))}
+                                moveNumber={moveNumber}
+                                setMoveNumber={(value) => dispatch(setMoveNumber(value))}
+                            />
+                            <ScoreSheet scoreSheet={scoreSheet} />
+                        </div>
+                    </div>
+                </div>
             </div>
+            <footer className="footer">
+                <p>&copy; Dismath Checkers, All rights reserved.</p>
+            </footer>
         </div>
     );
 }

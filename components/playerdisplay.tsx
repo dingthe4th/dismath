@@ -27,10 +27,10 @@ const PlayerDisplay: React.FC<PlayerDisplayProps> = ({ player1, player2, current
     return (
         <div className={styles.profileContainer}>
             <div className={styles.playerVs}>
-                {player1Name} ({player1Piece}) vs {player2Name} ({player2Piece})
+                <h2>{player1Name} ({player1Piece}) vs {player2Name} ({player2Piece})</h2>
             </div>
             <div className={styles.currentTurn}>
-                Current Turn: {currentPlayerName}
+                <h3>Current Turn: {currentPlayerName}</h3>
             </div>
         </div>
     );
