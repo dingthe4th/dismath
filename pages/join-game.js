@@ -24,7 +24,6 @@ const JoinGame = () => {
                     const player2Piece = player1Piece === 'T' ? 'F' : 'T';
                     set(child(roomRef, 'player2'), { uid: getAuth(app).currentUser?.uid, piece: player2Piece, email: getAuth(app).currentUser?.email });
                     set(child(roomRef, 'status'), 'in progress');
-                    console.log("Player 2 created with uid: " + getAuth(app).currentUser?.uid, ' and piece is: ', player2Piece);
                     // Redirect to the game page with the room ID
                     router.push(`/game/${inputRoomId}`);
                 } catch (error) {

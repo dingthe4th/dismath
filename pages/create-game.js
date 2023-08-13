@@ -33,9 +33,6 @@ const CreateGame = () => {
             currentPlayer: firstMovePlayer,
         };
 
-        // console.log("Player 1 created with uid: " + initialData.player1.uid, ' and piece is: ', initialData.player1.piece);
-        // console.log("First turn is: ", initialData.firstTurn);
-
         set(newRoomRef, initialData)
             .then(() => {
                 setRoomId(uniqueRoomId);
