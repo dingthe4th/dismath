@@ -92,6 +92,8 @@ const Board: React.FC<BoardProps> = ({score,
     const [computerTurn, setComputerTurn] = useState(() => false);
     const boardRef = useRef<HTMLDivElement>(null);
     const offset = 100; // offset of the board, choosing pieces
+    const xtolerance = 0; // tolerance of the pieces
+    const ytolerance = 41; // tolerance of the pieces
     const fetchCanCapture = useCallback(async (selectedPiece: Piece, board: (Piece | typeof EMPTY_CELL)[][], currentPlayer: 'F' | 'T' | null | undefined) => {
         try {
             const response = await fetch('/api/get-force-capture', {
@@ -192,13 +194,18 @@ const Board: React.FC<BoardProps> = ({score,
             const element = e.target as HTMLElement;
             const boardElement = boardRef.current;
             if (element.classList.contains(tile_style.piece) && boardElement) {
-                const x = Math.abs(Math.floor((e.clientX - boardElement.offsetLeft) / offset));
-                const y = Math.abs(Math.floor((e.clientY - boardElement.offsetTop) / offset));
+                const x = Math.abs(Math.floor((e.clientX - boardElement.offsetLeft + xtolerance) / offset));
+                const y = Math.abs(Math.floor((e.clientY - boardElement.offsetTop + ytolerance) / offset));
+
+                const tempX = Math.floor((e.clientX - boardElement.offsetLeft + xtolerance) / offset);
+                const tempY = Math.floor((e.clientY - boardElement.offsetTop + ytolerance) / offset);
+
+                // console.log(tempX, tempY, x, y);
+                // console.log(e.clientX, e.clientY, boardElement.offsetTop, boardElement.offsetLeft);
 
                 const foundPiece = board[y][x];
-                // console.log(x,y);
                 if (foundPiece && foundPiece.value === currentPlayer && foundPiece.isPiece && isValidSquare(x,y)) {
-                    // console.log(`Found piece: ${foundPiece.value}`);
+                    console.log(`Found piece: ${foundPiece.value}`);
                     // Set states
                     setActivePiece({piece: foundPiece, index: {x, y}});
                     setIsDragging(true);  // Set isDragging to true
@@ -326,8 +333,8 @@ const Board: React.FC<BoardProps> = ({score,
         if (activePiece && (playerPiece === currentPlayer)) {  // Only move the piece if it was grabbed
             const boardElement = boardRef.current;
             if (boardElement) {
-                const x = Math.abs(Math.floor((e.clientX - boardElement.offsetLeft) / offset));
-                const y = Math.abs(Math.floor((e.clientY - boardElement.offsetTop) / offset));
+                const x = Math.abs(Math.floor((e.clientX - boardElement.offsetLeft + xtolerance) / offset));
+                const y = Math.abs(Math.floor((e.clientY - boardElement.offsetTop + ytolerance) / offset));
 
                 if (x >= 0 && x < 8 && y >= 0 && y < 8) {
                     setActivePiecePosition({ x, y });
@@ -563,7 +570,7 @@ const Board: React.FC<BoardProps> = ({score,
             } else {
                 isLegalMove = currentPlayer !== computerPlayer && legalMoves.some(move => move.x === x && move.y === y);
             }
-            let displayLegalMoves = isLegalMove && isDragging;
+            let displayLegalMoves = isLegalMove && isDragging && isPVP;
 
             renderBoard.push(
                 <Tile
