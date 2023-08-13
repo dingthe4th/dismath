@@ -183,7 +183,7 @@ const Board: React.FC<BoardProps> = ({score,
             console.error('Error fetching scores:', error);
             return { score: score, moveScore: 0 };
         }
-    }, [moveNumber, score]); // move number
+    }, [moveNumber, score, setScore]); // move number
 
     const grabPiece = useCallback(async (e: React.MouseEvent) => {
         // let tempBoard = JSON.parse(JSON.stringify(board));
@@ -347,7 +347,7 @@ const Board: React.FC<BoardProps> = ({score,
                 }
             }
         }
-    }, [activePiece, dropPiece, currentPlayer]);
+    }, [activePiece, dropPiece]);
 
     useEffect(() => {
         let gameOverFlag = 0;
@@ -392,7 +392,7 @@ const Board: React.FC<BoardProps> = ({score,
             setIsGameOver(gameOverFlag === 0);
         }
         checkGameOver();
-    }, [moveNumber, scoreSheet, currentPlayer]);
+    }, [moveNumber, scoreSheet]);
 
     useEffect(() => {
         // Delay before executing the computer move
@@ -406,6 +406,7 @@ const Board: React.FC<BoardProps> = ({score,
                     let totalTurnScore = 0; // Track the total score for the turn
                     let newBoard = JSON.parse(JSON.stringify(board)); // Create a copy of the current board
                     let bestMove = computerMove(newBoard, computerPlayer);
+                    console.log(bestMove, newBoard, computerPlayer);
                     prevBestMove = bestMove;
                     let initialSource = bestMove?.source; // Store the initial source of the move
                     let finalDest: LegalMove | null = null; // To store the final destination of the move

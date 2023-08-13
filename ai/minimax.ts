@@ -97,7 +97,7 @@ export function oppositePlayer(player_side: string): 'T' | 'F' {
 
 export function MMAB(depth: number, player_side: 'T' | 'F', alpha: number, beta: number, board: (Piece | typeof EMPTY_CELL)[][]): number {
     if (depth === 0) {
-        return staticEvaluation(player_side, board); // Define static_evaluation function as needed
+        return staticEvaluation(player_side, board);
     }
 
     const nodes = getAllPossibleMoves(player_side, board);
@@ -148,7 +148,7 @@ export function applyMove(board: (Piece | typeof EMPTY_CELL)[][], move: Computer
     return newBoard;
 }
 
-export function computerMove(board: (Piece | typeof EMPTY_CELL)[][], player_side: string,  selectedPiece?: Piece): ComputerMove | null {
+export function computerMove(board: (Piece | typeof EMPTY_CELL)[][], player_side: 'T' | 'F',  selectedPiece?: Piece): ComputerMove | null {
     // Determine the best move using the Minimax algorithm with Alpha-Beta pruning
     let bestScore = -Infinity;
     let bestMove: ComputerMove | null = null;
@@ -169,8 +169,9 @@ export function computerMove(board: (Piece | typeof EMPTY_CELL)[][], player_side
             const newBoard = applyMove(board, move, tempPiece);
 
             // Call the Minimax function for the new state
-            const score = MMAB(3, oppositePlayer(player_side), -Infinity, Infinity, newBoard);
-
+            const score = MMAB(3, player_side, -Infinity, Infinity, newBoard);
+            // const score = result.score;
+            console.log("Move:", move, "Score:", score);
             // Update the best score and move if this move is better
             if (score > bestScore) {
                 bestScore = score;
@@ -179,5 +180,6 @@ export function computerMove(board: (Piece | typeof EMPTY_CELL)[][], player_side
         }
     });
 
+    // console.log("BEST MOVE: ", bestMove);
     return bestMove;
 }
