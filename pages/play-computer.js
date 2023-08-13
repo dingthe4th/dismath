@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useRouter} from 'next/router';
 import {app, firebaseAuth} from '../firebase-config/config';
 import {getDatabase, push, ref, set} from 'firebase/database';
@@ -14,6 +14,17 @@ const CreateSinglePlayerGame = () => {
     const router = useRouter();
     const [user, loading] = useAuthState(firebaseAuth);
     const [errorMessage, setErrorMessage] = useState('');
+
+
+    useEffect(() => {
+        if (!user) {
+            router.push("/login");
+        }
+    }, [user, router]);
+
+    if (loading) {
+        return <Loading />;
+    }
 
     const createGame = () => {
         setErrorMessage(''); // Clear any previous errors
@@ -49,14 +60,6 @@ const CreateSinglePlayerGame = () => {
         await signOut(firebaseAuth);
         router.push("/login");
     };
-
-    if (loading) {
-        return <Loading />;
-    }
-
-    if (!user) {
-        router.push("/login");
-    }
 
     return (
         <div className="container">

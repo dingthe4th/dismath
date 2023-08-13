@@ -32,9 +32,11 @@ function PVPGame() {
         router.push("/")
     }
 
-    if (!user) {
-        router.push("/login")
-    }
+    useEffect(() => {
+        if (!user) {
+            router.push("/login")
+        }
+    }, [user, router]);
 
     if (loading) {
         return<Loading />;

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import {useEffect, useState} from 'react'
 import { useRouter } from 'next/router';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -10,12 +10,16 @@ import Image from "next/image";
 
 const Login = () => {
     const router = useRouter()
-
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [errorMessage, setErrorMessage] = useState("")
-
     const [user, loading] = useAuthState(firebaseAuth);
+
+    useEffect(() => {
+        if (!user) {
+            router.push('/login');
+        }
+    }, [user, router]);
 
     const loginUser = async () => {
         try {
@@ -25,11 +29,6 @@ const Login = () => {
         } catch (e) {
             setErrorMessage(e?.message ?? 'Failed to register. Try again later.')
         }
-    }
-
-    if (user) {
-        router.push("/")
-        return <Loading />;
     }
 
     return (
