@@ -1,5 +1,6 @@
 # DISMATH - DISCRETE MATH - DAMATH
 
+
 Damath is a game which practices and tests the calculation skills of the players.  
 
 Damath was invented by Jesus Huenda, a teacher from Sorsogon who aims to use board games to teach those dislike mathematics to learn the subject.   
