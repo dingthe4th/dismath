@@ -5,16 +5,16 @@ import Image from "next/image";
 
 const HowToPlay = () => {
     return (
-        <div className={styles.container}>
-            <header className={styles.header}>
-                <div className={styles.logo}>
+        <div className={"container"}>
+            <header className={"header"}>
+                <div className={"logo"}>
                     <Link href="/">
                         <span>
                             <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={50} height={50} />
                         </span>
                     </Link>
                 </div>
-                <nav className={styles.navigation}>
+                <nav className={"navigation"}>
                     <ul>
                         <li>
                             <Link href="/">Home</Link>
@@ -28,19 +28,24 @@ const HowToPlay = () => {
                     </ul>
                 </nav>
             </header>
-            <div className={styles.content}>
-                <iframe
-                    src="https://docs.google.com/presentation/d/1BBRXjgx873v1G8OfKJB6SSgGYQb8MWoduC3B8BfSBYw/embed?start=false&loop=false&delayms=3000"
-                    frameBorder="0"
-                    width="960"
-                    height="569"
-                    allowFullScreen
-                ></iframe>
+
+            <div className={"cover"}>
+                <div className={"overlay"}>
+                        <iframe
+                            src="https://docs.google.com/presentation/d/1BBRXjgx873v1G8OfKJB6SSgGYQb8MWoduC3B8BfSBYw/embed?start=false&loop=false&delayms=3000"
+                            frameBorder="0"
+                            width="1000"
+                            height="600"
+                            allowFullScreen
+                        ></iframe>
+                </div>
             </div>
-            <footer className={styles.footer}>
+
+            <footer className={"footer"}>
                 <p>&copy; Discrete Damath, All rights reserved.</p>
             </footer>
         </div>
+
     );
 };
 
