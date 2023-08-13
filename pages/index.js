@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import styles from '../styles/home.module.css';
+import Image from "next/image";
 
 const Home = () => {
     return (
@@ -9,7 +10,7 @@ const Home = () => {
                 <div className={"logo"}>
                     <Link href="/">
                         <span>
-                            <img src="/static/default_logo.png" alt="Discrete Damath Logo" />
+                            <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={30} height={30} />
                         </span>
                     </Link>
                 </div>
@@ -33,7 +34,7 @@ const Home = () => {
                     <div className={styles.logoCenter}>
                         <Link href="/">
                           <span>
-                            <img src="/static/default_logo.png" alt="Discrete Damath Fancy Photo" />
+                            <Image src="/static/default_logo.png" alt="Discrete Damath Fancy Photo" width={300} height={300}/>
                           </span>
                         </Link>
                     </div>

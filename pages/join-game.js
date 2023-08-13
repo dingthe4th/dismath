@@ -6,6 +6,7 @@ import { getAuth } from 'firebase/auth';
 import { useRouter } from "next/router";
 import Link from "next/link";
 import styles from '../styles/joingame.module.css';
+import Image from "next/image";
 
 const JoinGame = () => {
     const [inputRoomId, setInputRoomId] = useState('');
@@ -41,7 +42,7 @@ const JoinGame = () => {
                 <div className={"logo"}>
                     <Link href="/">
                         <span>
-                            <img src="/static/default_logo.png" alt="Discrete Damath Logo" />
+                            <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={20} height={20}/>
                         </span>
                     </Link>
                 </div>

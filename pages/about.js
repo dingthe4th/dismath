@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import styles from '../styles/about.module.css';
+import Image from "next/image";
 
 const About = () => {
     return (
@@ -9,7 +10,7 @@ const About = () => {
                 <div className={styles.logo}>
                     <Link href="/">
                         <span>
-                            <img src="/static/default_logo.png" alt="Discrete Damath Logo" />
+                            <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={20} height={20}/>
                         </span>
                     </Link>
                 </div>
@@ -43,7 +44,7 @@ const About = () => {
                         allowFullScreen
                     ></iframe>
 
-                    <p>Originally, I was planning to implement it, but it would be complex to calculate since it involves derivatives, so I went and implemented my former professor's version of Damath for Discrete Mathematics, Dismath.</p>
+                    <p>Originally, I was planning to implement it, but it would be complex to calculate since it involves derivatives, so I went and implemented my former professor version of Damath for Discrete Mathematics, Dismath.</p>
                 </div>
 
                 <div>

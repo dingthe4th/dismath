@@ -24,6 +24,7 @@ import {app} from '../../firebase-config/config';
 import {getAuth} from 'firebase/auth';
 import PlayerDisplay from "../../components/playerdisplay";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Game() {
 
@@ -133,7 +134,7 @@ export default function Game() {
                 <div className="logo">
                     <Link href="/">
                         <span>
-                            <img src="/static/default_banner.jpg" alt="Dismath Checkers Logo" />
+                            <Image src="/static/default_banner.jpg" alt="Dismath Checkers Logo" width={20} height={20}/>
                         </span>
                     </Link>
                 </div>

@@ -6,6 +6,7 @@ import { firebaseAuth } from "../../firebase-config/config"
 import styles from '../../styles/playhuman.module.css';
 import Link from "next/link";
 import Loading from "../../components/loading";
+import Image from "next/image";
 
 function PVPGame() {
     const router = useRouter()
@@ -51,7 +52,7 @@ function PVPGame() {
                 <div className={"logo"}>
                     <Link href="/">
                         <span>
-                            <img src="/static/default_logo.png" alt="Discrete Damath Logo" />
+                            <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={30} height={30} />
                         </span>
                     </Link>
                 </div>
@@ -74,19 +75,19 @@ function PVPGame() {
                 <div className={"overlay"}>
                     <div className={styles.buttonContainer}>
                         <button className={styles.gameButton} onClick={goToMainPage}>
-                            <img src="/static/main_page_icon.png" alt="Main Page" />
+                            <Image src="/static/main_page_icon.png" alt="Main Page" width={50} height={50} />
                             Go To Main Page
                         </button>
                         <button className={styles.gameButton} onClick={goToCreateGame}>
-                            <img src="/static/create_game_icon.png" alt="Create Game" />
+                            <Image src="/static/create_game_icon.png" alt="Create Game" width={50} height={50}/>
                             Create Game
                         </button>
                         <button className={styles.gameButton} onClick={goToJoinGame}>
-                            <img src="/static/join_game_icon.png" alt="Join Game" />
+                            <Image src="/static/join_game_icon.png" alt="Join Game" width={50} height={50}/>
                             Join Game
                         </button>
                         <button className={styles.gameButton} onClick={signOutUser}>
-                            <img src="/static/sign_out_icon.png" alt="Sign Out" />
+                            <Image src="/static/sign_out_icon.png" alt="Sign Out" width={50} height={50}/>
                             Sign Out
                         </button>
                     </div>

@@ -6,6 +6,7 @@ import { firebaseAuth } from '../firebase-config/config'
 import styles from '../styles/login.module.css';
 import Link from "next/link";
 import Loading from "../components/loading";
+import Image from "next/image";
 
 const Login = () => {
     const router = useRouter()
@@ -37,7 +38,7 @@ const Login = () => {
                 <div className={"logo"}>
                     <Link href="/">
             <span>
-              <img src="/static/default_logo.png" alt="Discrete Damath Logo" />
+              <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={20} height={20} />
             </span>
                     </Link>
                 </div>
@@ -71,7 +72,7 @@ const Login = () => {
                             LOGIN
                         </button>
                         <div className={styles.registerLink}>
-                            <p>Don't have an account? <Link href="/register">Register</Link></p>
+                            <p>No account yet? <Link href="/register">Register</Link></p>
                         </div>
 
                     </div>

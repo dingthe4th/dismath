@@ -1,5 +1,6 @@
 import styles from '../styles/error.module.css';
 import Link from "next/link";
+import Image from "next/image";
 
 const CustomErrorPage = () => {
     return (
@@ -8,7 +9,7 @@ const CustomErrorPage = () => {
                 <div className={"logo"}>
                     <Link href="/">
             <span>
-              <img src="/static/default_banner.jpg" alt="Dismath Checkers Logo" />
+              <Image src="/static/default_banner.jpg" alt="Dismath Checkers Logo" width={30} height={30} />
             </span>
                     </Link>
                 </div>

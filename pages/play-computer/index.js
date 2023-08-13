@@ -8,6 +8,7 @@ import Link from 'next/link';
 import styles from '../../styles/playai.module.css';
 import {initializeBoard} from "../../components/board";
 import Loading from "../../components/loading";
+import Image from "next/image";
 
 const CreateSinglePlayerGame = () => {
     const router = useRouter();
@@ -60,10 +61,10 @@ const CreateSinglePlayerGame = () => {
     return (
         <div className="container">
             <header className="header">
-                <div className="logo">
+                <div className={"logo"}>
                     <Link href="/">
                         <span>
-                            <img src="/static/default_logo.png" alt="Discrete Damath Logo" />
+                            <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={30} height={30} />
                         </span>
                     </Link>
                 </div>
@@ -80,11 +81,11 @@ const CreateSinglePlayerGame = () => {
                     {errorMessage && <div className="error">{errorMessage}</div>}
                     <div className={styles.buttonContainer}>
                         <button className={styles.gameButton} onClick={createGame}>
-                            <img src="/static/ai_icon.png" alt="AI Icon" />
+                            <Image src="/static/ai_icon.png" alt="AI Icon"  width={50} height={50}/>
                             Start Single Player Game
                         </button>
                         <button className={styles.gameButton} onClick={signOutUser}>
-                            <img src="/static/sign_out_icon.png" alt="Sign Out Icon" />
+                            <Image src="/static/sign_out_icon.png" alt="Sign Out Icon" width={50} height={50} />
                             Sign Out
                         </button>
                     </div>

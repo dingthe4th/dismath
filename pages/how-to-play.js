@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import styles from '../styles/about.module.css';
+import Image from "next/image";
 
 const HowToPlay = () => {
     return (
@@ -9,7 +10,7 @@ const HowToPlay = () => {
                 <div className={styles.logo}>
                     <Link href="/">
                         <span>
-                            <img src="/static/default_logo.png" alt="Discrete Damath Logo" />
+                            <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={20} height={20} />
                         </span>
                     </Link>
                 </div>
