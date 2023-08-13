@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/router';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -42,7 +42,7 @@ const Register = () => {
                 <div className={"logo"}>
                     <Link href="/">
             <span>
-              <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={20} height={20}/>
+              <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={50} height={50} />
             </span>
                     </Link>
                 </div>

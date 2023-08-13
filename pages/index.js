@@ -10,7 +10,7 @@ const Home = () => {
                 <div className={"logo"}>
                     <Link href="/">
                         <span>
-                            <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={30} height={30} />
+                            <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={50} height={50} />
                         </span>
                     </Link>
                 </div>

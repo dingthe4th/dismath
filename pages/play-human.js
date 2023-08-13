@@ -29,12 +29,12 @@ function PVPGame() {
     }
     const signOutUser = async () => {
         await signOut(firebaseAuth)
-        router.push("/")
+        await router.push("/")
     }
 
     useEffect(() => {
         if (!user) {
-            router.push("/login")
+            router.push(`/login?from=${router.asPath}`);
         }
     }, [user, router]);
 
@@ -54,7 +54,7 @@ function PVPGame() {
                 <div className={"logo"}>
                     <Link href="/">
                         <span>
-                            <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={30} height={30} />
+                            <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={50} height={50} />
                         </span>
                     </Link>
                 </div>

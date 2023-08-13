@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import { useRouter } from 'next/router';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -15,21 +15,25 @@ const Login = () => {
     const [errorMessage, setErrorMessage] = useState("")
     const [user, loading] = useAuthState(firebaseAuth);
 
-    useEffect(() => {
-        if (!user) {
-            router.push('/login');
-        }
-    }, [user, router]);
-
     const loginUser = async () => {
         try {
-            setErrorMessage("")
-            await signInWithEmailAndPassword(firebaseAuth, email, password)
-            router.beforePopState();
+            setErrorMessage("");
+            await signInWithEmailAndPassword(firebaseAuth, email, password);
+
+            // Retrieve the 'from' query parameter
+            const { from } = router.query;
+
+            // Redirect to the 'from' page if it's available, otherwise redirect to a default page
+            if (from) {
+                router.push(from);
+            } else {
+                router.push("/");
+            }
         } catch (e) {
-            setErrorMessage(e?.message ?? 'Failed to register. Try again later.')
+            setErrorMessage(e?.message ?? 'Failed to register. Try again later.');
         }
-    }
+    };
+
 
     return (
         <div className={"container"}>
@@ -37,7 +41,7 @@ const Login = () => {
                 <div className={"logo"}>
                     <Link href="/">
             <span>
-              <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={20} height={20} />
+              <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={50} height={50} />
             </span>
                     </Link>
                 </div>

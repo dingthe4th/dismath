@@ -155,8 +155,8 @@ const Board: React.FC<BoardProps> = ({score,
             }
             if(oldX !== newX && oldY !== newY && isPVP) {
                 newMoveNumber = newMoveNumber + 1;
-                console.log("Old move number", moveNumber);
-                console.log("New move number", newMoveNumber);
+                // console.log("Old move number", moveNumber);
+                // console.log("New move number", newMoveNumber);
                 const newScoreNotation: ScoreNotation = {
                     moveNumber: newMoveNumber,
                     source: { x: oldX, y: oldY },
@@ -186,7 +186,7 @@ const Board: React.FC<BoardProps> = ({score,
 
     const grabPiece = useCallback(async (e: React.MouseEvent) => {
         // let tempBoard = board.map((row: BoardRow) => [...row]);
-        console.log(isDragging, isLoading, playerPiece, currentPlayer);
+        // console.log(isDragging, isLoading, playerPiece, currentPlayer);
         if (!isDragging && !isLoading && playerPiece === currentPlayer) {
             setIsLoading(true);
             e.preventDefault();
@@ -199,7 +199,7 @@ const Board: React.FC<BoardProps> = ({score,
                 const foundPiece = board[y][x];
 
                 if (foundPiece && foundPiece.value === currentPlayer && foundPiece.isPiece && isValidSquare(x,y)) {
-                    console.log(`Found piece: ${foundPiece.value}`);
+                    // console.log(`Found piece: ${foundPiece.value}`);
                     // Set states
                     setActivePiece({piece: foundPiece, index: {x, y}});
                     setIsDragging(true);  // Set isDragging to true
@@ -261,7 +261,7 @@ const Board: React.FC<BoardProps> = ({score,
 
                 updatedBoard[newY][newX] = movedPiece;
                 updatedBoard[oldY][oldX] = EMPTY_CELL;
-                console.log("New X: ", newX, "New Y: ", newY);
+                // console.log("New X: ", newX, "New Y: ", newY);
                 setBoard(updatedBoard);
 
                 // After making a move, fetch the legal moves for the moved piece again
@@ -345,7 +345,7 @@ const Board: React.FC<BoardProps> = ({score,
 
     useEffect(() => {
         let gameOverFlag = 0;
-        console.log("GAMEOVERRRRRRR?");
+        // console.log("GAMEOVERRRRRRR?");
         const checkGameOver = async() => {
             // Count the pieces for each player
             const tPieces = board.flat().filter(piece => piece?.value === 'T').length;
@@ -353,14 +353,14 @@ const Board: React.FC<BoardProps> = ({score,
 
             if (tPieces === 0 || fPieces === 0) {
                 // One of the players has no more pieces left
-                console.log("GAME OVER THERE IS NO MORE PIECES LEFT")
+                // console.log("GAME OVER THERE IS NO MORE PIECES LEFT")
                 setIsGameOver(true);
             }
 
             // Check if the game reaches move 100
             // TODO: Check average game moves, add 30 to that, that's the limit
             if (moveNumber === 70) {
-                console.log("GAME OVER BECAUSE OF MOVES")
+                // console.log("GAME OVER BECAUSE OF MOVES")
                 setIsGameOver(true);
             }
 
@@ -490,11 +490,11 @@ const Board: React.FC<BoardProps> = ({score,
                             if (canCapture && isCapture) {
                                 calculation = '';
                                 bestMove = computerMove(newBoard, computerPlayer, tempPiece);
-                                console.log("BEST MOVE", bestMove);
+                                // console.log("BEST MOVE", bestMove);
                                 if (bestMove !=null && !isValidSquare(bestMove.dest.x, bestMove.dest.y)) {
                                     flag = false;
                                     bestMove = null;
-                                    console.log(" I STOPPED THE BUG HERE ");
+                                    // console.log(" I STOPPED THE BUG HERE ");
                                 }
                             } else {
                                 flag = false;
@@ -525,7 +525,7 @@ const Board: React.FC<BoardProps> = ({score,
             };
         }
         if ((currentPlayer === computerPlayer) && !isPVP && moveNumber !== 0) {
-            console.log("Computer move");
+            // console.log("Computer move");
             doComputerMove();
         }
     }, [currentPlayer, isPVP]);

@@ -35,4 +35,4 @@ yarn-error.log*
 next-env.d.ts
 
 #admintools
-pages/admintools.js
+pages/admintool.js

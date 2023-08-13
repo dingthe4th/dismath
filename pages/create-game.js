@@ -33,8 +33,8 @@ const CreateGame = () => {
             currentPlayer: firstMovePlayer,
         };
 
-        console.log("Player 1 created with uid: " + initialData.player1.uid, ' and piece is: ', initialData.player1.piece);
-        console.log("First turn is: ", initialData.firstTurn);
+        // console.log("Player 1 created with uid: " + initialData.player1.uid, ' and piece is: ', initialData.player1.piece);
+        // console.log("First turn is: ", initialData.firstTurn);
 
         set(newRoomRef, initialData)
             .then(() => {
@@ -69,7 +69,7 @@ const CreateGame = () => {
                 <div className={"logo"}>
                     <Link href="/">
                         <span>
-                            <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={20} height={20}/>
+                            <Image src="/static/default_logo.png" alt="Discrete Damath Logo" width={50} height={50} />
                         </span>
                     </Link>
                 </div>

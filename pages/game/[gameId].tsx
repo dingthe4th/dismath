@@ -25,6 +25,7 @@ import {getAuth} from 'firebase/auth';
 import PlayerDisplay from "../../components/playerdisplay";
 import Link from "next/link";
 import Image from "next/image";
+import Loading from "../../components/loading";
 
 export default function Game() {
 
@@ -71,7 +72,7 @@ export default function Game() {
                 // Handle disconnections:
                 if (!data) {
                     // If data is null, the room has been deleted or does not exist
-                    console.log('Game Over: One of the players has disconnected');
+                    // console.log('Game Over: One of the players has disconnected');
                     dispatch(setIsGameOver(true));
                     return;
                 }
@@ -126,7 +127,7 @@ export default function Game() {
             ? gameData?.player1?.piece
             : gameData?.player2?.piece;
 
-    if (!gameData) return <div>Loading...</div>;
+    if (!gameData) return <Loading />;
 
     return (
         <div className="container">
@@ -134,7 +135,7 @@ export default function Game() {
                 <div className="logo">
                     <Link href="/">
                         <span>
-                            <Image src="/static/default_banner.jpg" alt="Dismath Checkers Logo" width={20} height={20}/>
+                            <Image src="/static/default_logo.png" alt="Dismath Checkers Logo" width={50} height={50}/>
                         </span>
                     </Link>
                 </div>
