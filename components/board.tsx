@@ -91,9 +91,8 @@ const Board: React.FC<BoardProps> = ({score,
     const [prevMove, setPrevMove] = useState<{ capture: boolean; type: string } | null>(() => null);
     const [computerTurn, setComputerTurn] = useState(() => false);
     const boardRef = useRef<HTMLDivElement>(null);
-    const offset = 80;
-
-    const fetchCanCapture = useCallback(async (selectedPiece: Piece, board: (Piece | typeof EMPTY_CELL)[][], currentPlayer: 'F' | 'T') => {
+    const offset = 100; // offset of the board, choosing pieces
+    const fetchCanCapture = useCallback(async (selectedPiece: Piece, board: (Piece | typeof EMPTY_CELL)[][], currentPlayer: 'F' | 'T' | null | undefined) => {
         try {
             const response = await fetch('/api/get-force-capture', {
                 method: 'POST',
@@ -185,7 +184,7 @@ const Board: React.FC<BoardProps> = ({score,
     }, [moveNumber, score]); // move number
 
     const grabPiece = useCallback(async (e: React.MouseEvent) => {
-        // let tempBoard = board.map((row: BoardRow) => [...row]);
+        // let tempBoard = JSON.parse(JSON.stringify(board));
         // console.log(isDragging, isLoading, playerPiece, currentPlayer);
         if (!isDragging && !isLoading && playerPiece === currentPlayer) {
             setIsLoading(true);
@@ -194,10 +193,10 @@ const Board: React.FC<BoardProps> = ({score,
             const boardElement = boardRef.current;
             if (element.classList.contains(tile_style.piece) && boardElement) {
                 const x = Math.abs(Math.floor((e.clientX - boardElement.offsetLeft) / offset));
-                const y = Math.abs( Math.floor((e.clientY - boardElement.offsetTop) / offset));
+                const y = Math.abs(Math.floor((e.clientY - boardElement.offsetTop) / offset));
 
                 const foundPiece = board[y][x];
-
+                // console.log(x,y);
                 if (foundPiece && foundPiece.value === currentPlayer && foundPiece.isPiece && isValidSquare(x,y)) {
                     // console.log(`Found piece: ${foundPiece.value}`);
                     // Set states
@@ -507,7 +506,7 @@ const Board: React.FC<BoardProps> = ({score,
                     const updatedCurrentPlayer = currentPlayer === 'T' ? 'F' : 'T';
                     setCurrentPlayer(updatedCurrentPlayer);
                     if(isCapture) {
-                       setScoreSheet(newScoreSheet);
+                        setScoreSheet(newScoreSheet);
                     }
                     setMoveNumber(newMoveNumber);
                     setScore(newScore); // Update the total score
@@ -572,7 +571,7 @@ const Board: React.FC<BoardProps> = ({score,
                     image={currentPiece?.image}
                     type={cellNum}
                     isPiece={currentPiece.isPiece}
-                    // isLegalMove={displayLegalMoves}
+                    isLegalMove={displayLegalMoves}
                     x={pieceX}
                     y={pieceY}
                     operand={operations[y][x]}

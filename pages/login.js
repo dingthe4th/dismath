@@ -34,6 +34,16 @@ const Login = () => {
         }
     };
 
+    useEffect(() => {
+        if (user) {
+            const { from } = router.query;
+            if (from) {
+                router.push(from);
+            } else {
+                router.push("/");
+            }
+        }
+    }, [user, router.query]);
 
     return (
         <div className={"container"}>
