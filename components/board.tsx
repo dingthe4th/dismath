@@ -361,6 +361,7 @@ const Board: React.FC<BoardProps> = ({score,
                 // One of the players has no more pieces left
                 // console.log("GAME OVER THERE IS NO MORE PIECES LEFT")
                 setIsGameOver(true);
+                return;
             }
 
             // Check if the game reaches move 100
@@ -368,6 +369,7 @@ const Board: React.FC<BoardProps> = ({score,
             if (moveNumber === 70) {
                 // console.log("GAME OVER BECAUSE OF MOVES")
                 setIsGameOver(true);
+                return;
             }
 
             // Check if the current player has any legal moves
