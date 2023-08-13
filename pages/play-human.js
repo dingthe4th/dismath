@@ -2,10 +2,10 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/router"
 import { signOut } from "firebase/auth"
 import { useAuthState } from "react-firebase-hooks/auth";
-import { firebaseAuth } from "../../firebase-config/config"
-import styles from '../../styles/playhuman.module.css';
+import { firebaseAuth } from "../firebase-config/config"
+import styles from '../styles/playhuman.module.css';
 import Link from "next/link";
-import Loading from "../../components/loading";
+import Loading from "../components/loading";
 import Image from "next/image";
 
 function PVPGame() {
@@ -62,10 +62,10 @@ function PVPGame() {
                             <Link href="/">Home</Link>
                         </li>
                         <li>
-                            <Link href="/how-to-play">How to Play</Link>
+                            <Link href="/pages/how-to-play">How to Play</Link>
                         </li>
                         <li>
-                            <Link href="/about">About</Link>
+                            <Link href="/pages/about">About</Link>
                         </li>
                     </ul>
                 </nav>

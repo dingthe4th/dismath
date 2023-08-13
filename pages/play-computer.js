@@ -1,13 +1,13 @@
 import React, {useState} from 'react';
 import {useRouter} from 'next/router';
-import {app, firebaseAuth} from '../../firebase-config/config';
+import {app, firebaseAuth} from '../firebase-config/config';
 import {getDatabase, push, ref, set} from 'firebase/database';
 import {getAuth, signOut} from 'firebase/auth';
 import {useAuthState} from "react-firebase-hooks/auth";
 import Link from 'next/link';
-import styles from '../../styles/playai.module.css';
-import {initializeBoard} from "../../components/board";
-import Loading from "../../components/loading";
+import styles from '../styles/playai.module.css';
+import {initializeBoard} from "../components/board";
+import Loading from "../components/loading";
 import Image from "next/image";
 
 const CreateSinglePlayerGame = () => {
@@ -71,8 +71,8 @@ const CreateSinglePlayerGame = () => {
                 <nav className="navigation">
                     <ul>
                         <li><Link href="/">Home</Link></li>
-                        <li><Link href="/how-to-play">How to Play</Link></li>
-                        <li><Link href="/about">About</Link></li>
+                        <li><Link href="/pages/how-to-play">How to Play</Link></li>
+                        <li><Link href="/pages/about">About</Link></li>
                     </ul>
                 </nav>
             </header>
