@@ -4,7 +4,7 @@ Damath is a game which practices and tests the calculation skills of the players
 
 Damath was invented by Jesus Huenda, a teacher from Sorsogon who aims to use board games to teach those dislike mathematics to learn the subject.   
 
-Back in senior high school, I made derivative damath, a version of Damath that practices players in basic derivative rules for calculus. You can watch it below:
+Back in senior high school, I made derivative damath, a version of Damath that practices players in basic derivative rules for calculus. You can watch it here: https://www.youtube.com/watch?v=8jMdBfAtsxM
 
 Originally, I was planning to implement it, but it would be complex to calculate since it involves derivatives, so I went and implemented my former professor version of Damath for Discrete Mathematics, Dismath.
 
