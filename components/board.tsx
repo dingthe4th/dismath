@@ -570,7 +570,7 @@ const Board: React.FC<BoardProps> = ({score,
             } else {
                 isLegalMove = currentPlayer !== computerPlayer && legalMoves.some(move => move.x === x && move.y === y);
             }
-            let displayLegalMoves = isLegalMove && isDragging && isPVP;
+            let displayLegalMoves = isLegalMove && isDragging;  // && isPVP;
 
             renderBoard.push(
                 <Tile
