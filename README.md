@@ -1,9 +1,10 @@
 # DISMATH - DISCRETE MATH - DAMATH  
 Player v AI Demo  
 <iframe width="560" height="315" src="https://www.youtube.com/embed/RkPhqgkyh4o?si=aIX1AFdLttFm1PM_" title="dismath-pve" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/RkPhqgkyh4o/0.jpg)](https://www.youtube.com/watch?v=RkPhqgkyh4o)
 
 Player v Player  
-<iframe width="560" height="315" src="https://www.youtube.com/embed/S2OsYnlGyVU?si=UrjORXwRtCu9t8lx" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/S2OsYnlGyVU/0.jpg)](https://www.youtube.com/watch?v=S2OsYnlGyVU)
 
 Damath is a game which practices and tests the calculation skills of the players.  
 
