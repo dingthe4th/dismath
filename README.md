@@ -1,6 +1,5 @@
 # DISMATH - DISCRETE MATH - DAMATH  
 Player v AI Demo  
-<iframe width="560" height="315" src="https://www.youtube.com/embed/RkPhqgkyh4o?si=aIX1AFdLttFm1PM_" title="dismath-pve" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/RkPhqgkyh4o/0.jpg)](https://www.youtube.com/watch?v=RkPhqgkyh4o)
 
 Player v Player  
