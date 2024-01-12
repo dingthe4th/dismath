@@ -1,5 +1,9 @@
-# DISMATH - DISCRETE MATH - DAMATH
+# DISMATH - DISCRETE MATH - DAMATH  
+Player v AI Demo  
+<iframe width="560" height="315" src="https://www.youtube.com/embed/RkPhqgkyh4o?si=aIX1AFdLttFm1PM_" title="dismath-pve" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
+Player v Player  
+<iframe width="560" height="315" src="https://www.youtube.com/embed/S2OsYnlGyVU?si=UrjORXwRtCu9t8lx" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 Damath is a game which practices and tests the calculation skills of the players.  
 
@@ -12,8 +16,7 @@ Originally, I was planning to implement it, but it would be complex to calculate
 ## About  
 This is a web implementation of the paper: https://ieeexplore.ieee.org/document/9072894 written by my former professor college professor Dr. Melvin Cabatuan.
 
-You can find more of his work at:
-
+You can find more of his work at:  
 * https://www.researchgate.net/profile/Melvin-Cabatuan
 * https://github.com/melvincabatuan
 * https://ieeexplore.ieee.org/author/38505771100   
@@ -21,7 +24,7 @@ You can find more of his work at:
 His original game is written using pygame, and I implemented it using React. There might be bugs in the code due to time constraints, but it should be stable at the very least. The AI opponent is not as strong as stated in the paper, as my static evaluation function is the bare minimum. It does not search deep the tree of best case scenarios. Unfortunately, I cannot commit time to make it better due to the other ongoing bootcamp I am currently attending.
 
 ### How to play
-https://docs.google.com/presentation/d/1BBRXjgx873v1G8OfKJB6SSgGYQb8MWoduC3B8BfSBYw/edit?usp=sharing
+https://docs.google.com/presentation/d/1BBRXjgx873v1G8OfKJB6SSgGYQb8MWoduC3B8BfSBYw/edit?usp=sharing  
 
 ### Future Developments
 * Smarter AI opponent. During the time of writing, I am currently attending a bootcamp, so  
@@ -40,3 +43,4 @@ in which, after that selected piece ended its capture streak, the move will end.
 August 6, 2023 - This has been fixed.
 * Sometimes, when you move and capture is detected, it will still be your move (FIXED)
 * Minor page loading / rendering issues
+* Bugs on PvP due to firebase setup or other issues
